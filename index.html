@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlassStock - Gestion de Stock Multi-Centres avec Année Véhicule</title>
+    <title>GlassStock - Gestion de Stock Multi-Centres</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- QR Code Scanner & Generator Libs -->
@@ -32,7 +32,7 @@
                 <form onsubmit="loginUser(event)" class="space-y-4 text-left">
                     <div>
                         <label class="text-xs font-medium text-slate-400">Adresse E-mail</label>
-                        <input type="email" id="login-email" placeholder="ex: admin@varglass.fr" required
+                        <input type="email" id="login-email" placeholder="ex: centre@varglass.fr" required
                             class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
@@ -46,24 +46,17 @@
                     <p id="auth-error" class="text-red-400 text-xs text-center hidden mt-2"></p>
                 </form>
                 <div class="mt-6 pt-4 border-t border-slate-800 flex justify-between text-xs">
-                    <span class="text-slate-400">Nouveau compte ?</span>
-                    <button onclick="toggleAuthMode('register')" class="text-blue-400 hover:underline font-medium">Créer un compte</button>
+                    <span class="text-slate-400">Nouveau centre ?</span>
+                    <button onclick="toggleAuthMode('register')" class="text-blue-400 hover:underline font-medium">Créer un compte atelier</button>
                 </div>
             </div>
 
             <!-- FORMULAIRE D'INSCRIPTION -->
             <div id="register-box" class="hidden text-left">
-                <h2 class="text-2xl font-bold mb-2 text-center">Création de Compte</h2>
-                <p class="text-slate-400 text-sm mb-6 text-center">Enregistrez un accès Admin ou Centre.</p>
+                <h2 class="text-2xl font-bold mb-2 text-center">Création Compte Atelier</h2>
+                <p class="text-slate-400 text-sm mb-6 text-center">Enregistrez l'accès pour votre centre.</p>
                 <form onsubmit="registerUser(event)" class="space-y-3">
                     <div>
-                        <label class="text-xs font-medium text-slate-400">Rôle du compte</label>
-                        <select id="reg-role" onchange="toggleRegCenterSelect()" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
-                            <option value="centre" class="text-slate-900 bg-white">Compte Centre (Restreint à son atelier)</option>
-                            <option value="admin" class="text-slate-900 bg-white">Administrateur Global (Accès total)</option>
-                        </select>
-                    </div>
-                    <div id="reg-center-container">
                         <label class="text-xs font-medium text-slate-400">Centre rattaché</label>
                         <select id="reg-center" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
                             <!-- Rempli dynamiquement -->
@@ -71,7 +64,7 @@
                     </div>
                     <div>
                         <label class="text-xs font-medium text-slate-400">Adresse E-mail</label>
-                        <input type="email" id="reg-email" placeholder="votre-email@varglass.fr" required
+                        <input type="email" id="reg-email" placeholder="frejus@varglass.fr" required
                             class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
@@ -79,13 +72,8 @@
                         <input type="password" id="reg-password" placeholder="••••••••" required minlength="6"
                             class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
                     </div>
-                    <div>
-                        <label class="text-xs font-medium text-amber-400">Mot de passe Maître d'Atelier (Sécurité)</label>
-                        <input type="password" id="reg-master-key" placeholder="Vitrage2026" required
-                            class="w-full mt-1 bg-slate-800 border border-amber-500/40 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
-                    </div>
                     <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-emerald-600/20 mt-2">
-                        Valider la création
+                        Créer le compte Atelier
                     </button>
                     <p id="reg-error" class="text-red-400 text-xs text-center hidden mt-2"></p>
                 </form>
@@ -454,7 +442,8 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const MASTER_PASSWORD = "Vitrage2026";
+        // VOTRE ADRESSE ADMINISTRATEUR UNIQUE
+        const ADMIN_EMAIL = "matthieu.monnereau@gmail.com";
 
         let currentUserDoc = null;
         let stockData = { "Fréjus": [], "Nice": [], "Toulon": [], "Marseille": [] };
@@ -473,7 +462,10 @@
                 const userDocRef = doc(db, "users", user.uid);
                 const snap = await getDoc(userDocRef);
                 
-                if (snap.exists()) {
+                // Si c'est votre adresse mail, attribution immédiate et forcée du rôle ADMIN GLOBAL
+                if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                    currentUserDoc = { role: "admin", assignedCenter: "Tous", email: user.email };
+                } else if (snap.exists()) {
                     currentUserDoc = snap.data();
                 } else {
                     currentUserDoc = { role: "centre", assignedCenter: "Fréjus", email: user.email };
@@ -527,26 +519,20 @@
 
         window.registerUser = async function(e) {
             e.preventDefault();
-            const role = document.getElementById('reg-role').value;
             const center = document.getElementById('reg-center').value;
             const email = document.getElementById('reg-email').value;
             const pass = document.getElementById('reg-password').value;
-            const masterKey = document.getElementById('reg-master-key').value;
             const errBox = document.getElementById('reg-error');
             errBox.classList.add('hidden');
 
-            if (masterKey !== MASTER_PASSWORD) {
-                errBox.innerText = "Mot de passe Maître d'Atelier incorrect.";
-                errBox.classList.remove('hidden');
-                return;
-            }
-
             try {
                 const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                const isMasterUser = (email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+
                 await setDoc(doc(db, "users", cred.user.uid), {
                     email: email,
-                    role: role,
-                    assignedCenter: role === 'admin' ? 'Tous' : center
+                    role: isMasterUser ? 'admin' : 'centre',
+                    assignedCenter: isMasterUser ? 'Tous' : center
                 });
             } catch (err) {
                 errBox.innerText = err.message || "Erreur lors de la création du compte.";
@@ -566,16 +552,6 @@
             } else {
                 document.getElementById('register-box').classList.add('hidden');
                 document.getElementById('login-box').classList.remove('hidden');
-            }
-        }
-
-        window.toggleRegCenterSelect = function() {
-            const role = document.getElementById('reg-role').value;
-            const container = document.getElementById('reg-center-container');
-            if (role === 'admin') {
-                container.classList.add('hidden');
-            } else {
-                container.classList.remove('hidden');
             }
         }
 
