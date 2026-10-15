@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlassStock - Gestion de Stock Multi-Centres Multi-Comptes</title>
+    <title>GlassStock - Gestion de Stock Multi-Centres avec Inventaire Live</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- QR Code Scanner & Generator Libs -->
@@ -158,14 +158,17 @@
             </div>
 
             <!-- ONGLETS -->
-            <div class="flex border-b border-slate-800 gap-6 text-sm font-medium">
-                <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="pb-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition">
+            <div class="flex border-b border-slate-800 gap-6 text-sm font-medium overflow-x-auto">
+                <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="pb-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition whitespace-nowrap">
                     <i class="fa-solid fa-boxes-stacked"></i> Catalogue & Stock
                 </button>
-                <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+                <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap">
                     <i class="fa-solid fa-camera"></i> Scanner Caméra QR
                 </button>
-                <button onclick="switchTab('history')" id="tab-btn-history" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+                <button onclick="switchTab('inventory')" id="tab-btn-inventory" class="pb-3 border-b-2 border-transparent text-amber-400 hover:text-amber-300 flex items-center gap-2 transition whitespace-nowrap">
+                    <i class="fa-solid fa-clipboard-check"></i> Mode Inventaire
+                </button>
+                <button onclick="switchTab('history')" id="tab-btn-history" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap">
                     <i class="fa-solid fa-clock-rotate-left"></i> Historique Poses
                 </button>
             </div>
@@ -238,6 +241,71 @@
                         <button onclick="executeScanAction()" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl transition shadow-lg shadow-emerald-600/20">
                             Valider l'Action Stock
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB : MODE INVENTAIRE PHYSIQUE -->
+            <div id="tab-inventory" class="hidden space-y-6">
+                <div class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-clipboard-check text-amber-400"></i> Inventaire Physique - Centre <span id="inv-center-name" class="text-blue-400"></span></h3>
+                            <p class="text-xs text-slate-400 mt-1">Scannez successivement tous les QR codes présents physiquement dans l'atelier, puis lancez le comparatif informatique.</p>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <button onclick="startInventorySession()" id="btn-start-inv" class="flex-1 sm:flex-none bg-amber-600 hover:bg-amber-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-lg shadow-amber-600/20">
+                                <i class="fa-solid fa-play"></i> Démarrer l'inventaire
+                            </button>
+                            <button onclick="finishInventorySession()" id="btn-finish-inv" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-lg shadow-emerald-600/20 hidden">
+                                <i class="fa-solid fa-flag-checkered"></i> Terminer & Comparer
+                            </button>
+                            <button onclick="cancelInventorySession()" id="btn-cancel-inv" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2.5 rounded-xl text-sm transition hidden">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Caméra et Compteur d'inventaire -->
+                    <div id="inv-scanner-box" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-800">
+                        <div class="flex flex-col items-center">
+                            <div id="inventory-reader" class="w-full max-w-sm rounded-xl overflow-hidden border border-slate-700 bg-slate-950 min-h-[220px]"></div>
+                            <p class="text-xs text-amber-400/90 mt-2 font-medium animate-pulse">📷 Caméra active : Scannez chaque étiquette une par une</p>
+                        </div>
+                        <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-xl flex flex-col justify-between space-y-4">
+                            <div>
+                                <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Pièces scannées en direct :</h4>
+                                <div class="text-3xl font-bold text-amber-400" id="inv-scanned-count">0</div>
+                                <p class="text-xs text-slate-400 mt-2">Dernier code scanné : <span id="inv-last-code" class="font-mono text-white">-</span></p>
+                            </div>
+                            <div class="max-h-32 overflow-y-auto bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-xs text-slate-300" id="inv-scanned-list">
+                                <!-- Liste des codes scannés lors de la session -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Résultat comparatif -->
+                    <div id="inv-results-box" class="hidden space-y-4 pt-4 border-t border-slate-800">
+                        <h4 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-scale-balanced text-blue-400"></i> Résultats du comparatif (Physique vs Informatique)</h4>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase bg-slate-800/50">
+                                            <th class="p-3">Eurocode</th>
+                                            <th class="p-3">Véhicule</th>
+                                            <th class="p-3 text-center">Stock Info</th>
+                                            <th class="p-3 text-center">Scanné (Physique)</th>
+                                            <th class="p-3">Diagnostic / Écart</th>
+                                            <th class="p-3 text-right">Action corrective</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="inv-results-tbody" class="divide-y divide-slate-800/60 text-sm">
+                                        <!-- Rempli dynamiquement -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -397,12 +465,15 @@
         let currentCenter = "Fréjus";
         let mainHtml5QrCode = null;
         let modalHtml5QrCode = null;
+        let inventoryHtml5QrCode = null;
         let isWriting = false;
 
-        // GESTION DE L'ÉTAT D'AUTHENTIFICATION
+        // Variables pour la session d'inventaire
+        let inventoryActive = false;
+        let scannedInventoryCodes = [];
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Récupérer le rôle et le centre de l'utilisateur
                 const userDocRef = doc(db, "users", user.uid);
                 const snap = await getDoc(userDocRef);
                 
@@ -487,6 +558,7 @@
         }
 
         window.logoutUser = function() {
+            stopInventorySession();
             signOut(auth);
         }
 
@@ -590,28 +662,37 @@
                 select.appendChild(opt);
                 select.disabled = true;
             }
+            document.getElementById('inv-center-name').innerText = currentCenter;
         }
 
         window.changeCenter = function() {
             if (currentUserDoc.role === 'admin') {
                 currentCenter = document.getElementById('current-center').value;
+                document.getElementById('inv-center-name').innerText = currentCenter;
+                stopInventorySession();
                 renderCatalog();
                 updateStats();
             }
         }
 
         window.switchTab = function(tab) {
-            ['catalog', 'scanner', 'history'].forEach(t => {
+            ['catalog', 'scanner', 'inventory', 'history'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
-                document.getElementById(`tab-btn-${t}`).className = "pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition";
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if(btn) btn.className = "pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap";
             });
             document.getElementById(`tab-${tab}`).classList.remove('hidden');
-            document.getElementById(`tab-btn-${tab}`).className = "pb-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition";
+            const activeBtn = document.getElementById(`tab-btn-${tab}`);
+            if(activeBtn) activeBtn.className = "pb-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition whitespace-nowrap";
             
             if (tab === 'scanner') {
                 setTimeout(startMainScanner, 300);
             } else {
                 stopMainScanner();
+            }
+
+            if (tab !== 'inventory') {
+                // Ne coupe pas forcément l'inventaire si on navigue, mais gère la caméra
             }
         }
 
@@ -637,6 +718,191 @@
             if (mainHtml5QrCode && mainHtml5QrCode.isScanning) {
                 mainHtml5QrCode.stop().catch(() => {});
             }
+        }
+
+        // --- GESTION DU MODE INVENTAIRE PHYSIQUE ---
+        window.startInventorySession = function() {
+            inventoryActive = true;
+            scannedInventoryCodes = [];
+            document.getElementById('btn-start-inv').classList.add('hidden');
+            document.getElementById('btn-finish-inv').classList.remove('hidden');
+            document.getElementById('btn-cancel-inv').classList.remove('hidden');
+            document.getElementById('inv-scanner-box').classList.remove('hidden');
+            document.getElementById('inv-results-box').classList.add('hidden');
+            
+            updateInventoryUI();
+
+            if (!inventoryHtml5QrCode) {
+                inventoryHtml5QrCode = new Html5Qrcode("inventory-reader");
+            }
+            if (!inventoryHtml5QrCode.isScanning) {
+                inventoryHtml5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 250, height: 150 } },
+                    code => {
+                        const cleanCode = code.trim().toUpperCase();
+                        if (!scannedInventoryCodes.includes(cleanCode)) {
+                            scannedInventoryCodes.push(cleanCode);
+                            navigator.vibrate?.(200);
+                            updateInventoryUI();
+                        }
+                    }
+                ).catch(err => {
+                    console.warn("Caméra d'inventaire non accessible", err);
+                });
+            }
+        }
+
+        function updateInventoryUI() {
+            document.getElementById('inv-scanned-count').innerText = scannedInventoryCodes.length;
+            const last = scannedInventoryCodes[scannedInventoryCodes.length - 1] || '-';
+            document.getElementById('inv-last-code').innerText = last;
+            
+            const listContainer = document.getElementById('inv-scanned-list');
+            listContainer.innerHTML = '';
+            if (scannedInventoryCodes.length === 0) {
+                listContainer.innerHTML = '<span class="text-slate-500">En attente des premiers scans...</span>';
+            } else {
+                scannedInventoryCodes.slice().reverse().forEach(c => {
+                    listContainer.innerHTML += `<div>✓ ${c}</div>`;
+                });
+            }
+        }
+
+        window.cancelInventorySession = function() {
+            stopInventorySession();
+            document.getElementById('inv-scanner-box').classList.add('hidden');
+            document.getElementById('btn-start-inv').classList.remove('hidden');
+            document.getElementById('btn-finish-inv').classList.add('hidden');
+            document.getElementById('btn-cancel-inv').classList.add('hidden');
+        }
+
+        function stopInventorySession() {
+            inventoryActive = false;
+            if (inventoryHtml5QrCode && inventoryHtml5QrCode.isScanning) {
+                inventoryHtml5QrCode.stop().catch(() => {});
+            }
+        }
+
+        window.finishInventorySession = function() {
+            stopInventorySession();
+            document.getElementById('inv-scanner-box').classList.add('hidden');
+            document.getElementById('btn-start-inv').classList.remove('hidden');
+            document.getElementById('btn-finish-inv').classList.add('hidden');
+            document.getElementById('btn-cancel-inv').classList.add('hidden');
+            document.getElementById('inv-results-box').classList.remove('hidden');
+
+            renderInventoryResults();
+        }
+
+        function renderInventoryResults() {
+            const tbody = document.getElementById('inv-results-tbody');
+            tbody.innerHTML = '';
+
+            const list = stockData[currentCenter] || [];
+            
+            if (list.length === 0 && scannedInventoryCodes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">Aucune donnée informatique ni scan enregistré.</td></tr>`;
+                return;
+            }
+
+            // On va recenser tous les eurocodes uniques (ceux en stock info + ceux scannés physiquement)
+            const allCodesMap = new Map();
+
+            list.forEach(item => {
+                allCodesMap.set(item.eurocode, {
+                    item: item,
+                    infoStock: item.stock || 0,
+                    physicalCount: 0
+                });
+            });
+
+            // Compter combien de fois chaque code a été scanné physiquement
+            scannedInventoryCodes.forEach(code => {
+                if (allCodesMap.has(code)) {
+                    allCodesMap.get(code).physicalCount += 1;
+                } else {
+                    // Scanné mais pas trouvé dans le stock info de ce centre
+                    allCodesMap.set(code, {
+                        item: { id: Date.now(), eurocode: code, marque: "Inconnu", modele: "Hors stock", type: "Inconnu" },
+                        infoStock: 0,
+                        physicalCount: 1
+                    });
+                }
+            });
+
+            allCodesMap.forEach((data, code) => {
+                const info = data.infoStock;
+                const phys = data.physicalCount;
+                const diff = phys - info; // Si négatif, le stock info indique plus de pièces qu'en rayon (pièces non retirées/posées)
+
+                let badge = "";
+                let actionBtn = "";
+
+                if (diff < 0) {
+                    badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20">Écart : ${diff} (Non retiré du stock)</span>`;
+                    actionBtn = `<button onclick="correctInventoryStock('${code}', ${phys})" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">Mettre à ${phys}</button>`;
+                } else if (diff > 0) {
+                    badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Écart : +${diff} (Physique > Info)</span>`;
+                    actionBtn = `<button onclick="correctInventoryStock('${code}', ${phys})" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">Mettre à ${phys}</button>`;
+                } else {
+                    badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Conforme (OK)</span>`;
+                    actionBtn = `<span class="text-xs text-slate-500">Aucun</span>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="p-3 font-mono font-bold text-blue-400">${code}</td>
+                        <td class="p-3 text-slate-300 text-xs">${data.item.marque || '-'} ${data.item.modele || '-'}</td>
+                        <td class="p-3 text-center font-bold">${info}</td>
+                        <td class="p-3 text-center font-bold text-amber-400">${phys}</td>
+                        <td class="p-3">${badge}</td>
+                        <td class="p-3 text-right">${actionBtn}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.correctInventoryStock = function(eurocode, newStockValue) {
+            const list = stockData[currentCenter] || [];
+            let item = list.find(i => i.eurocode === eurocode);
+
+            if (item) {
+                item.stock = newStockValue;
+                historyData.unshift({ 
+                    date: new Date().toISOString().replace('T', ' ').slice(0, 19), 
+                    center: currentCenter, 
+                    type: 'Inventaire (Ajustement)', 
+                    eurocode: eurocode, 
+                    details: `Ajustement inventaire physique à ${newStockValue}` 
+                });
+            } else {
+                // Si l'article scanné n'existait pas dans ce centre, on l'ajoute
+                stockData[currentCenter].push({
+                    id: Date.now(),
+                    eurocode: eurocode,
+                    type: "Pare-brise",
+                    marque: "Trouvaille",
+                    modele: "Inventaire",
+                    options: "",
+                    emplacement: "Non rangé",
+                    stock: newStockValue,
+                    seuil: 2
+                });
+                historyData.unshift({ 
+                    date: new Date().toISOString().replace('T', ' ').slice(0, 19), 
+                    center: currentCenter, 
+                    type: 'Inventaire (Ajout)', 
+                    eurocode: eurocode, 
+                    details: `Ajout suite inventaire physique (${newStockValue})` 
+                });
+            }
+
+            saveData();
+            renderCatalog();
+            renderHistory();
+            renderInventoryResults();
+            alert(`Stock de la référence ${eurocode} mis à jour avec succès !`);
         }
 
         window.renderCatalog = function() {
