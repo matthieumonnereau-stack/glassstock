@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlassStock - Gestion de Stock Multi-Centres Admin Total</title>
+    <title>GlassStock - Gestion de Stock Multi-Centres Sections & États</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- QR Code Scanner & Generator Libs -->
@@ -148,7 +148,7 @@
                     <h3 class="text-2xl font-bold mt-1 text-blue-400" id="stat-stock">0</h3>
                 </div>
                 <div class="bg-slate-800/50 border border-slate-800 p-4 rounded-2xl">
-                    <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Stock Faible (&lt;2)</p>
+                    <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Stock Faible</p>
                     <h3 class="text-2xl font-bold mt-1 text-amber-400" id="stat-low">0</h3>
                 </div>
                 <div class="bg-slate-800/50 border border-slate-800 p-4 rounded-2xl">
@@ -160,7 +160,7 @@
             <!-- ONGLETS -->
             <div class="flex border-b border-slate-800 gap-6 text-sm font-medium overflow-x-auto">
                 <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="pb-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition whitespace-nowrap">
-                    <i class="fa-solid fa-boxes-stacked"></i> Catalogue & Stock
+                    <i class="fa-solid fa-boxes-stacked"></i> Catalogue & Stock (Par Marque)
                 </button>
                 <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap">
                     <i class="fa-solid fa-camera"></i> Scanner Caméra QR
@@ -173,8 +173,8 @@
                 </button>
             </div>
 
-            <!-- TAB 1 : CATALOGUE -->
-            <div id="tab-catalog" class="space-y-4">
+            <!-- TAB 1 : CATALOGUE GROUPÉ PAR MARQUE -->
+            <div id="tab-catalog" class="space-y-6">
                 <div class="flex flex-col sm:flex-row justify-between gap-4 items-center">
                     <div class="relative w-full sm:w-80">
                         <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
@@ -186,25 +186,9 @@
                     </button>
                 </div>
 
-                <!-- Tableau Stock -->
-                <div class="bg-slate-800/40 border border-slate-800 rounded-2xl overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase bg-slate-800/60">
-                                    <th class="p-4">Eurocode</th>
-                                    <th class="p-4">Véhicule & Type</th>
-                                    <th class="p-4">Options / ADAS</th>
-                                    <th class="p-4">Emplacement</th>
-                                    <th class="p-4 text-center">Stock</th>
-                                    <th class="p-4 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="catalog-table-body" class="divide-y divide-slate-800/60 text-sm">
-                                <!-- Rempli par JS -->
-                            </tbody>
-                        </table>
-                    </div>
+                <!-- Conteneur des sections par marque -->
+                <div id="catalog-sections-container" class="space-y-6">
+                    <!-- Rempli dynamiquement par sections de marques -->
                 </div>
             </div>
 
@@ -368,12 +352,20 @@
                     </select>
                 </div>
                 <div>
+                    <label class="text-xs font-medium text-slate-400">État du Vitrage</label>
+                    <select id="f-etat" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-medium">
+                        <option value="Neuf" class="text-slate-900 bg-white">Neuf</option>
+                        <option value="Occasion" class="text-emerald-400 bg-slate-900">Occasion (Ligne Verte)</option>
+                        <option value="Impacté / Reprise" class="text-amber-400 bg-slate-900">Impacté / Reprise</option>
+                    </select>
+                </div>
+                <div>
                     <label class="text-xs font-medium text-slate-400">Marque Véhicule</label>
-                    <input type="text" id="f-marque" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                    <input type="text" id="f-marque" placeholder="Ex: Volkswagen" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
                     <label class="text-xs font-medium text-slate-400">Modèle</label>
-                    <input type="text" id="f-modele" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                    <input type="text" id="f-modele" placeholder="Ex: Golf 8" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
                     <label class="text-xs font-medium text-slate-400">Options / ADAS</label>
@@ -388,8 +380,9 @@
                     <input type="number" id="f-qte" value="1" min="0" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
-                    <label class="text-xs font-medium text-slate-400">Seuil Alerte Min</label>
-                    <input type="number" id="f-seuil" value="2" min="1" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                    <label class="text-xs font-medium text-amber-400 font-bold">Seuil Alerte Min Spécifique</label>
+                    <input type="number" id="f-seuil" value="0" min="0" placeholder="Ex: 1" class="w-full mt-1 bg-slate-800 border border-amber-500/40 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+                    <p class="text-[10px] text-slate-400 mt-1">Alerte stock faible si ≤ à cette valeur.</p>
                 </div>
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
@@ -872,12 +865,13 @@
                     id: Date.now(),
                     eurocode: eurocode,
                     type: "Pare-brise",
-                    marque: "Trouvaille",
+                    etat: "Neuf",
+                    marque: "Inconnu",
                     modele: "Inventaire",
                     options: "",
                     emplacement: "Non rangé",
                     stock: newStockValue,
-                    seuil: 2
+                    seuil: 0
                 });
                 historyData.unshift({ 
                     date: new Date().toISOString().replace('T', ' ').slice(0, 19), 
@@ -895,43 +889,113 @@
             alert(`Stock de la référence ${eurocode} mis à jour !`);
         }
 
+        // --- CATALOGUE GROUPÉ PAR SECTIONS DE MARQUES ---
         window.renderCatalog = function() {
             const searchInput = document.getElementById('search-input');
             const query = searchInput ? searchInput.value.toLowerCase() : '';
-            const tbody = document.getElementById('catalog-table-body');
-            if(!tbody) return;
-            tbody.innerHTML = '';
+            const container = document.getElementById('catalog-sections-container');
+            if(!container) return;
+            container.innerHTML = '';
             
             const list = stockData[currentCenter] || [];
-            const filtered = list.filter(item => item.eurocode.toLowerCase().includes(query) || item.marque.toLowerCase().includes(query) || item.modele.toLowerCase().includes(query));
+            const filtered = list.filter(item => 
+                (item.eurocode && item.eurocode.toLowerCase().includes(query)) || 
+                (item.marque && item.marque.toLowerCase().includes(query)) || 
+                (item.modele && item.modele.toLowerCase().includes(query))
+            );
             
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">Aucun vitrage trouvé pour le centre ${currentCenter}.</td></tr>`;
+                container.innerHTML = `<div class="p-8 text-center text-slate-500 bg-slate-800/40 rounded-2xl border border-slate-800">Aucun vitrage trouvé pour le centre ${currentCenter}.</div>`;
                 return;
             }
 
+            // Grouper par Marque (insensible à la casse, valeur par défaut "Autre")
+            const groups = {};
             filtered.forEach(item => {
-                const low = item.stock <= item.seuil;
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-800/30 transition">
-                        <td class="p-4 font-mono font-bold text-blue-400">${item.eurocode}</td>
-                        <td class="p-4">
-                            <div class="font-medium text-slate-200">${item.marque} ${item.modele}</div>
-                            <div class="text-xs text-slate-400">${item.type}</div>
-                        </td>
-                        <td class="p-4 text-xs text-slate-300">${item.options || '-'}</td>
-                        <td class="p-4 font-medium text-slate-300">${item.emplacement || '-'}</td>
-                        <td class="p-4 text-center">
-                            <span class="px-2.5 py-1 rounded-full text-xs font-bold ${low ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}">
-                                ${item.stock}
-                            </span>
-                        </td>
-                        <td class="p-4 text-right space-x-2">
-                            <button onclick="showQr('${item.eurocode}')" title="Étiquette QR" class="text-slate-400 hover:text-white px-2 py-1 bg-slate-800 rounded-lg"><i class="fa-solid fa-qrcode"></i></button>
-                            <button onclick="openModal(${item.id})" title="Modifier" class="text-slate-400 hover:text-blue-400 px-2 py-1 bg-slate-800 rounded-lg"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteItem(${item.id})" title="Supprimer" class="text-slate-400 hover:text-red-400 px-2 py-1 bg-slate-800 rounded-lg"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
+                const marqueKey = (item.marque && item.marque.trim() !== '') ? item.marque.trim() : 'Autres marques';
+                if (!groups[marqueKey]) groups[marqueKey] = [];
+                groups[marqueKey].push(item);
+            });
+
+            // Trier les marques par ordre alphabétique
+            const sortedBrands = Object.keys(groups).sort();
+
+            sortedBrands.forEach(brand => {
+                const brandItems = groups[brand];
+
+                let rowsHtml = '';
+                brandItems.forEach(item => {
+                    const stockVal = item.stock !== undefined ? parseInt(item.stock) : 0;
+                    
+                    // Couleur stock : 0 = orange/ambre, >=1 = vert
+                    let stockBadgeClass = stockVal === 0 
+                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold' 
+                        : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold';
+
+                    // Couleur de ligne selon l'état du vitrage (ex: Occasion = vert)
+                    let rowBgClass = 'hover:bg-slate-800/30 transition';
+                    let etatBadgeHtml = '';
+
+                    const etat = item.etat || 'Neuf';
+                    if (etat === 'Occasion') {
+                        rowBgClass = 'bg-emerald-950/20 hover:bg-emerald-900/30 transition border-l-4 border-emerald-500';
+                        etatBadgeHtml = `<span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Occasion</span>`;
+                    } else if (etat === 'Impacté / Reprise') {
+                        rowBgClass = 'bg-amber-950/20 hover:bg-amber-900/30 transition border-l-4 border-amber-500';
+                        etatBadgeHtml = `<span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">Impacté / Reprise</span>`;
+                    } else {
+                        etatBadgeHtml = `<span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-400">Neuf</span>`;
+                    }
+
+                    rowsHtml += `
+                        <tr class="${rowBgClass}">
+                            <td class="p-4 font-mono font-bold text-blue-400">${item.eurocode}</td>
+                            <td class="p-4">
+                                <div class="font-medium text-slate-200">${item.marque} ${item.modele}</div>
+                                <div class="text-xs text-slate-400">${item.type} • ${etatBadgeHtml}</div>
+                            </td>
+                            <td class="p-4 text-xs text-slate-300">${item.options || '-'}</td>
+                            <td class="p-4 font-medium text-slate-300">${item.emplacement || '-'}</td>
+                            <td class="p-4 text-center">
+                                <span class="px-3 py-1 rounded-full text-xs ${stockBadgeClass}">
+                                    ${stockVal} en stock
+                                </span>
+                            </td>
+                            <td class="p-4 text-right space-x-2">
+                                <button onclick="showQr('${item.eurocode}')" title="Étiquette QR" class="text-slate-400 hover:text-white px-2.5 py-1.5 bg-slate-800 rounded-lg"><i class="fa-solid fa-qrcode"></i></button>
+                                <button onclick="openModal(${item.id})" title="Modifier" class="text-slate-400 hover:text-blue-400 px-2.5 py-1.5 bg-slate-800 rounded-lg"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deleteItem(${item.id})" title="Supprimer" class="text-slate-400 hover:text-red-400 px-2.5 py-1.5 bg-slate-800 rounded-lg"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                container.innerHTML += `
+                    <div class="bg-slate-800/40 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
+                        <div class="bg-slate-800/80 px-6 py-3 border-b border-slate-700/60 flex justify-between items-center">
+                            <h3 class="font-bold text-base text-white flex items-center gap-2">
+                                <i class="fa-solid fa-car text-blue-400"></i> ${brand}
+                            </h3>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-700 text-slate-300 font-medium">${brandItems.length} référence(s)</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-800/80 text-xs font-semibold text-slate-400 uppercase bg-slate-900/40">
+                                        <th class="p-4">Eurocode</th>
+                                        <th class="p-4">Véhicule & État</th>
+                                        <th class="p-4">Options / ADAS</th>
+                                        <th class="p-4">Emplacement</th>
+                                        <th class="p-4 text-center">Stock</th>
+                                        <th class="p-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-800/60 text-sm">
+                                    ${rowsHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 `;
             });
         }
@@ -939,10 +1003,14 @@
         window.updateStats = function() {
             const list = stockData[currentCenter] || [];
             document.getElementById('stat-refs').innerText = list.length;
-            const totalStock = list.reduce((acc, item) => acc + item.stock, 0);
+            const totalStock = list.reduce((acc, item) => acc + (item.stock || 0), 0);
             document.getElementById('stat-stock').innerText = totalStock;
-            const lowStock = list.filter(item => item.stock <= item.seuil).length;
-            document.getElementById('stat-low').innerText = lowStock;
+            
+            const lowStockCount = list.filter(item => {
+                const seuilMin = (item.seuil !== undefined && item.seuil !== null) ? parseInt(item.seuil) : 0;
+                return seuilMin > 0 && (item.stock || 0) <= seuilMin;
+            }).length;
+            document.getElementById('stat-low').innerText = lowStockCount;
             
             const monthStr = new Date().toISOString().slice(0, 7);
             const poses = historyData.filter(h => h.center === currentCenter && h.type.includes('Sortie') && h.date.startsWith(monthStr)).length;
@@ -957,24 +1025,26 @@
                 const item = stockData[currentCenter].find(i => i.id === id);
                 document.getElementById('edit-id').value = item.id;
                 document.getElementById('f-eurocode').value = item.eurocode;
-                document.getElementById('f-type').value = item.type;
-                document.getElementById('f-marque').value = item.marque;
-                document.getElementById('f-modele').value = item.modele;
-                document.getElementById('f-options').value = item.options;
-                document.getElementById('f-emplacement').value = item.emplacement;
-                document.getElementById('f-qte').value = item.stock;
-                document.getElementById('f-seuil').value = item.seuil;
+                document.getElementById('f-type').value = item.type || "Pare-brise";
+                document.getElementById('f-etat').value = item.etat || "Neuf";
+                document.getElementById('f-marque').value = item.marque || "";
+                document.getElementById('f-modele').value = item.modele || "";
+                document.getElementById('f-options').value = item.options || "";
+                document.getElementById('f-emplacement').value = item.emplacement || "";
+                document.getElementById('f-qte').value = item.stock !== undefined ? item.stock : 1;
+                document.getElementById('f-seuil').value = item.seuil !== undefined ? item.seuil : 0;
             } else {
                 document.getElementById('modal-title').innerText = "Ajouter un Vitrage";
                 document.getElementById('edit-id').value = "";
                 document.getElementById('f-eurocode').value = defaultEurocode;
                 document.getElementById('f-type').value = "Pare-brise";
+                document.getElementById('f-etat').value = "Neuf";
                 document.getElementById('f-marque').value = "";
                 document.getElementById('f-modele').value = "";
                 document.getElementById('f-options').value = "";
                 document.getElementById('f-emplacement').value = "";
                 document.getElementById('f-qte').value = 1;
-                document.getElementById('f-seuil').value = 2;
+                document.getElementById('f-seuil').value = 0;
             }
         }
 
@@ -1020,12 +1090,13 @@
                 id: id ? parseInt(id) : Date.now(),
                 eurocode,
                 type: document.getElementById('f-type').value,
-                marque: document.getElementById('f-marque').value,
-                modele: document.getElementById('f-modele').value,
+                etat: document.getElementById('f-etat').value,
+                marque: document.getElementById('f-marque').value.trim() || "Inconnue",
+                modele: document.getElementById('f-modele').value.trim(),
                 options: document.getElementById('f-options').value,
                 emplacement: document.getElementById('f-emplacement').value,
                 stock: parseInt(document.getElementById('f-qte').value) || 0,
-                seuil: parseInt(document.getElementById('f-seuil').value) || 2
+                seuil: parseInt(document.getElementById('f-seuil').value) || 0
             };
 
             if (!stockData[currentCenter]) stockData[currentCenter] = [];
