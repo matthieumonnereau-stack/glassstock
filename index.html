@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlassStock - Gestion de Stock Multi-Centres avec Inventaire Live</title>
+    <title>GlassStock - Gestion de Stock Multi-Centres Admin Total</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- QR Code Scanner & Generator Libs -->
@@ -27,12 +27,12 @@
             
             <!-- FORMULAIRE DE CONNEXION -->
             <div id="login-box">
-                <h2 class="text-2xl font-bold mb-2">Connexion Centre</h2>
-                <p class="text-slate-400 text-sm mb-6">Connectez-vous pour accéder à votre espace de stock.</p>
+                <h2 class="text-2xl font-bold mb-2">Connexion Atelier</h2>
+                <p class="text-slate-400 text-sm mb-6">Connectez-vous pour accéder à la gestion des stocks.</p>
                 <form onsubmit="loginUser(event)" class="space-y-4 text-left">
                     <div>
                         <label class="text-xs font-medium text-slate-400">Adresse E-mail</label>
-                        <input type="email" id="login-email" placeholder="ex: frejus@varglass.fr" required
+                        <input type="email" id="login-email" placeholder="ex: admin@varglass.fr" required
                             class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
@@ -46,21 +46,21 @@
                     <p id="auth-error" class="text-red-400 text-xs text-center hidden mt-2"></p>
                 </form>
                 <div class="mt-6 pt-4 border-t border-slate-800 flex justify-between text-xs">
-                    <span class="text-slate-400">Nouveau centre ?</span>
-                    <button onclick="toggleAuthMode('register')" class="text-blue-400 hover:underline font-medium">Créer un compte centre</button>
+                    <span class="text-slate-400">Nouveau compte ?</span>
+                    <button onclick="toggleAuthMode('register')" class="text-blue-400 hover:underline font-medium">Créer un compte</button>
                 </div>
             </div>
 
             <!-- FORMULAIRE D'INSCRIPTION -->
             <div id="register-box" class="hidden text-left">
-                <h2 class="text-2xl font-bold mb-2 text-center">Nouveau Compte Centre</h2>
-                <p class="text-slate-400 text-sm mb-6 text-center">Créez un accès sécurisé pour votre atelier.</p>
+                <h2 class="text-2xl font-bold mb-2 text-center">Création de Compte</h2>
+                <p class="text-slate-400 text-sm mb-6 text-center">Enregistrez un accès Admin ou Centre.</p>
                 <form onsubmit="registerUser(event)" class="space-y-3">
                     <div>
                         <label class="text-xs font-medium text-slate-400">Rôle du compte</label>
                         <select id="reg-role" onchange="toggleRegCenterSelect()" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
-                            <option value="centre">Compte Centre (Atelier)</option>
-                            <option value="admin">Administrateur Global</option>
+                            <option value="centre" class="text-slate-900 bg-white">Compte Centre (Restreint à son atelier)</option>
+                            <option value="admin" class="text-slate-900 bg-white">Administrateur Global (Accès total)</option>
                         </select>
                     </div>
                     <div id="reg-center-container">
@@ -71,7 +71,7 @@
                     </div>
                     <div>
                         <label class="text-xs font-medium text-slate-400">Adresse E-mail</label>
-                        <input type="email" id="reg-email" placeholder="centre@varglass.fr" required
+                        <input type="email" id="reg-email" placeholder="votre-email@varglass.fr" required
                             class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
@@ -85,7 +85,7 @@
                             class="w-full mt-1 bg-slate-800 border border-amber-500/40 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
                     </div>
                     <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-emerald-600/20 mt-2">
-                        Valider la création du compte
+                        Valider la création
                     </button>
                     <p id="reg-error" class="text-red-400 text-xs text-center hidden mt-2"></p>
                 </form>
@@ -279,7 +279,7 @@
                                 <p class="text-xs text-slate-400 mt-2">Dernier code scanné : <span id="inv-last-code" class="font-mono text-white">-</span></p>
                             </div>
                             <div class="max-h-32 overflow-y-auto bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-xs text-slate-300" id="inv-scanned-list">
-                                <!-- Liste des codes scannés lors de la session -->
+                                <!-- Liste des codes scannés -->
                             </div>
                         </div>
                     </div>
@@ -359,37 +359,37 @@
 
                 <div>
                     <label class="text-xs font-medium text-slate-400">Type de Vitre</label>
-                    <select id="f-type" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
-                        <option>Pare-brise</option>
-                        <option>Lunette arrière</option>
-                        <option>Vitre latérale</option>
-                        <option>Custode</option>
-                        <option>Toit panoramique</option>
+                    <select id="f-type" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                        <option class="text-slate-900 bg-white">Pare-brise</option>
+                        <option class="text-slate-900 bg-white">Lunette arrière</option>
+                        <option class="text-slate-900 bg-white">Vitre latérale</option>
+                        <option class="text-slate-900 bg-white">Custode</option>
+                        <option class="text-slate-900 bg-white">Toit panoramique</option>
                     </select>
                 </div>
                 <div>
                     <label class="text-xs font-medium text-slate-400">Marque Véhicule</label>
-                    <input type="text" id="f-marque" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                    <input type="text" id="f-marque" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
                     <label class="text-xs font-medium text-slate-400">Modèle</label>
-                    <input type="text" id="f-modele" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                    <input type="text" id="f-modele" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
                     <label class="text-xs font-medium text-slate-400">Options / ADAS</label>
-                    <input type="text" id="f-options" placeholder="Caméra, HUD, Chauffant..." class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                    <input type="text" id="f-options" placeholder="Caméra, HUD, Chauffant..." class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
                     <label class="text-xs font-medium text-slate-400">Emplacement (Rack)</label>
-                    <input type="text" id="f-emplacement" placeholder="Rack A-01" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                    <input type="text" id="f-emplacement" placeholder="Rack A-01" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
                     <label class="text-xs font-medium text-slate-400">Quantité Initiale</label>
-                    <input type="number" id="f-qte" value="1" min="0" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                    <input type="number" id="f-qte" value="1" min="0" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
                     <label class="text-xs font-medium text-slate-400">Seuil Alerte Min</label>
-                    <input type="number" id="f-seuil" value="2" min="1" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                    <input type="number" id="f-seuil" value="2" min="1" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
@@ -410,7 +410,7 @@
             <div class="space-y-3 bg-slate-800/40 p-4 rounded-xl border border-slate-800">
                 <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Ajouter un nouveau centre</h4>
                 <div class="flex gap-2">
-                    <input type="text" id="new-center-name" placeholder="Nom du centre..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+                    <input type="text" id="new-center-name" placeholder="Nom du centre..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500 text-white">
                     <button onclick="addNewCenter()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl text-sm font-medium transition">Ajouter</button>
                 </div>
             </div>
@@ -468,7 +468,6 @@
         let inventoryHtml5QrCode = null;
         let isWriting = false;
 
-        // Variables pour la session d'inventaire
         let inventoryActive = false;
         let scannedInventoryCodes = [];
 
@@ -501,7 +500,7 @@
             const btnCenters = document.getElementById('btn-centers-modal');
 
             if (currentUserDoc.role === 'admin') {
-                roleBadge.innerText = "Admin Global";
+                roleBadge.innerText = "Admin Global (Accès Total)";
                 roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20";
                 btnCenters.classList.remove('hidden');
                 document.getElementById('current-center').disabled = false;
@@ -510,6 +509,7 @@
                 roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20";
                 btnCenters.classList.add('hidden');
                 currentCenter = currentUserDoc.assignedCenter;
+                document.getElementById('current-center').disabled = true;
             }
         }
 
@@ -592,7 +592,7 @@
                 centers = Object.keys(snap.data().stock);
             }
             centers.forEach(c => {
-                select.innerHTML += `<option value="${c}">${c}</option>`;
+                select.innerHTML += `<option value="${c}" class="text-slate-900 bg-white">${c}</option>`;
             });
         }
 
@@ -645,10 +645,14 @@
             select.innerHTML = '';
             
             if (currentUserDoc.role === 'admin') {
-                Object.keys(stockData).forEach(center => {
+                const centers = Object.keys(stockData);
+                if (!centers.includes(currentCenter)) currentCenter = centers[0] || "Fréjus";
+                
+                centers.forEach(center => {
                     const opt = document.createElement('option');
                     opt.value = center;
                     opt.textContent = `Centre ${center}`;
+                    opt.className = "text-slate-900 bg-white";
                     if (center === currentCenter) opt.selected = true;
                     select.appendChild(opt);
                 });
@@ -658,6 +662,7 @@
                 const opt = document.createElement('option');
                 opt.value = currentCenter;
                 opt.textContent = `Centre ${currentCenter}`;
+                opt.className = "text-slate-900 bg-white";
                 opt.selected = true;
                 select.appendChild(opt);
                 select.disabled = true;
@@ -690,10 +695,6 @@
             } else {
                 stopMainScanner();
             }
-
-            if (tab !== 'inventory') {
-                // Ne coupe pas forcément l'inventaire si on navigue, mais gère la caméra
-            }
         }
 
         function startMainScanner() {
@@ -720,7 +721,6 @@
             }
         }
 
-        // --- GESTION DU MODE INVENTAIRE PHYSIQUE ---
         window.startInventorySession = function() {
             inventoryActive = true;
             scannedInventoryCodes = [];
@@ -800,13 +800,6 @@
             tbody.innerHTML = '';
 
             const list = stockData[currentCenter] || [];
-            
-            if (list.length === 0 && scannedInventoryCodes.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">Aucune donnée informatique ni scan enregistré.</td></tr>`;
-                return;
-            }
-
-            // On va recenser tous les eurocodes uniques (ceux en stock info + ceux scannés physiquement)
             const allCodesMap = new Map();
 
             list.forEach(item => {
@@ -817,12 +810,10 @@
                 });
             });
 
-            // Compter combien de fois chaque code a été scanné physiquement
             scannedInventoryCodes.forEach(code => {
                 if (allCodesMap.has(code)) {
                     allCodesMap.get(code).physicalCount += 1;
                 } else {
-                    // Scanné mais pas trouvé dans le stock info de ce centre
                     allCodesMap.set(code, {
                         item: { id: Date.now(), eurocode: code, marque: "Inconnu", modele: "Hors stock", type: "Inconnu" },
                         infoStock: 0,
@@ -834,16 +825,16 @@
             allCodesMap.forEach((data, code) => {
                 const info = data.infoStock;
                 const phys = data.physicalCount;
-                const diff = phys - info; // Si négatif, le stock info indique plus de pièces qu'en rayon (pièces non retirées/posées)
+                const diff = phys - info;
 
                 let badge = "";
                 let actionBtn = "";
 
                 if (diff < 0) {
-                    badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20">Écart : ${diff} (Non retiré du stock)</span>`;
+                    badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20">Écart : ${diff} (Non retiré)</span>`;
                     actionBtn = `<button onclick="correctInventoryStock('${code}', ${phys})" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">Mettre à ${phys}</button>`;
                 } else if (diff > 0) {
-                    badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Écart : +${diff} (Physique > Info)</span>`;
+                    badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Écart : +${diff} (En plus)</span>`;
                     actionBtn = `<button onclick="correctInventoryStock('${code}', ${phys})" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">Mettre à ${phys}</button>`;
                 } else {
                     badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Conforme (OK)</span>`;
@@ -874,10 +865,9 @@
                     center: currentCenter, 
                     type: 'Inventaire (Ajustement)', 
                     eurocode: eurocode, 
-                    details: `Ajustement inventaire physique à ${newStockValue}` 
+                    details: `Ajustement inventaire à ${newStockValue}` 
                 });
             } else {
-                // Si l'article scanné n'existait pas dans ce centre, on l'ajoute
                 stockData[currentCenter].push({
                     id: Date.now(),
                     eurocode: eurocode,
@@ -894,7 +884,7 @@
                     center: currentCenter, 
                     type: 'Inventaire (Ajout)', 
                     eurocode: eurocode, 
-                    details: `Ajout suite inventaire physique (${newStockValue})` 
+                    details: `Ajout suite inventaire (${newStockValue})` 
                 });
             }
 
@@ -902,7 +892,7 @@
             renderCatalog();
             renderHistory();
             renderInventoryResults();
-            alert(`Stock de la référence ${eurocode} mis à jour avec succès !`);
+            alert(`Stock de la référence ${eurocode} mis à jour !`);
         }
 
         window.renderCatalog = function() {
