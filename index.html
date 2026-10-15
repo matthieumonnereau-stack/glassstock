@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlassStock - Gestion de Stock Multi-Centres Multi-Comptes</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- QR Code Scanner & Generator Libs -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 h-full flex flex-col">
+
+    <!-- ÉCRAN DE CONNEXION ET CRÉATION DE COMPTE -->
+    <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-md w-full shadow-2xl text-center">
+            <div class="w-16 h-16 bg-blue-600/20 text-blue-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            
+            <!-- FORMULAIRE DE CONNEXION -->
+            <div id="login-box">
+                <h2 class="text-2xl font-bold mb-2">Connexion Centre</h2>
+                <p class="text-slate-400 text-sm mb-6">Connectez-vous pour accéder à votre espace de stock.</p>
+                <form onsubmit="loginUser(event)" class="space-y-4 text-left">
+                    <div>
+                        <label class="text-xs font-medium text-slate-400">Adresse E-mail</label>
+                        <input type="email" id="login-email" placeholder="ex: frejus@varglass.fr" required
+                            class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-400">Mot de passe</label>
+                        <input type="password" id="login-password" placeholder="••••••••" required
+                            class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-blue-600/20 mt-2">
+                        Se connecter
+                    </button>
+                    <p id="auth-error" class="text-red-400 text-xs text-center hidden mt-2"></p>
+                </form>
+                <div class="mt-6 pt-4 border-t border-slate-800 flex justify-between text-xs">
+                    <span class="text-slate-400">Nouveau centre ?</span>
+                    <button onclick="toggleAuthMode('register')" class="text-blue-400 hover:underline font-medium">Créer un compte centre</button>
+                </div>
+            </div>
+
+            <!-- FORMULAIRE D'INSCRIPTION -->
+            <div id="register-box" class="hidden text-left">
+                <h2 class="text-2xl font-bold mb-2 text-center">Nouveau Compte Centre</h2>
+                <p class="text-slate-400 text-sm mb-6 text-center">Créez un accès sécurisé pour votre atelier.</p>
+                <form onsubmit="registerUser(event)" class="space-y-3">
+                    <div>
+                        <label class="text-xs font-medium text-slate-400">Rôle du compte</label>
+                        <select id="reg-role" onchange="toggleRegCenterSelect()" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                            <option value="centre">Compte Centre (Atelier)</option>
+                            <option value="admin">Administrateur Global</option>
+                        </select>
+                    </div>
+                    <div id="reg-center-container">
+                        <label class="text-xs font-medium text-slate-400">Centre rattaché</label>
+                        <select id="reg-center" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                            <!-- Rempli dynamiquement -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-400">Adresse E-mail</label>
+                        <input type="email" id="reg-email" placeholder="centre@varglass.fr" required
+                            class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-400">Mot de passe</label>
+                        <input type="password" id="reg-password" placeholder="••••••••" required minlength="6"
+                            class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-amber-400">Mot de passe Maître d'Atelier (Sécurité)</label>
+                        <input type="password" id="reg-master-key" placeholder="Vitrage2026" required
+                            class="w-full mt-1 bg-slate-800 border border-amber-500/40 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-emerald-600/20 mt-2">
+                        Valider la création du compte
+                    </button>
+                    <p id="reg-error" class="text-red-400 text-xs text-center hidden mt-2"></p>
+                </form>
+                <div class="mt-4 pt-3 border-t border-slate-800 text-center text-xs">
+                    <button onclick="toggleAuthMode('login')" class="text-slate-400 hover:text-white">← Retour à la connexion</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- APPLICATION PRINCIPALE -->
+    <div id="main-app" class="flex-1 flex flex-col h-full hidden">
+        <!-- HEADER -->
+        <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-car-burst"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg flex items-center gap-2">
+                        GlassStock 
+                        <span id="role-badge" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">...</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 flex items-center gap-1.5" id="sync-status">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" id="sync-dot"></span> 
+                        <span id="user-display-email">Non connecté</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Sélecteur de Centre, Paramètres & Déconnexion -->
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
+                    <i class="fa-solid fa-location-dot text-blue-400"></i>
+                    <select id="current-center" onchange="changeCenter()" class="bg-transparent text-sm font-medium focus:outline-none cursor-pointer text-white">
+                        <!-- Rempli dynamiquement -->
+                    </select>
+                </div>
+                <button id="btn-centers-modal" onclick="openCentersModal()" title="Paramètres des centres" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-2 rounded-xl text-slate-300 transition hidden">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+                <button onclick="logoutUser()" title="Se déconnecter" class="bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 px-3 py-2 rounded-xl transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTENU PRINCIPAL -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 max-w-7xl mx-auto w-full space-y-6 pb-24 sm:pb-6">
+            
+            <!-- STATISTIQUES -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-800/50 border border-slate-800 p-4 rounded-2xl">
+                    <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Références</p>
+                    <h3 class="text-2xl font-bold mt-1" id="stat-refs">0</h3>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-800 p-4 rounded-2xl">
+                    <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Pare-Brises en Stock</p>
+                    <h3 class="text-2xl font-bold mt-1 text-blue-400" id="stat-stock">0</h3>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-800 p-4 rounded-2xl">
+                    <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Stock Faible (&lt;2)</p>
+                    <h3 class="text-2xl font-bold mt-1 text-amber-400" id="stat-low">0</h3>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-800 p-4 rounded-2xl">
+                    <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Poses du Mois</p>
+                    <h3 class="text-2xl font-bold mt-1 text-emerald-400" id="stat-poses">0</h3>
+                </div>
+            </div>
+
+            <!-- ONGLETS -->
+            <div class="flex border-b border-slate-800 gap-6 text-sm font-medium">
+                <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="pb-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-boxes-stacked"></i> Catalogue & Stock
+                </button>
+                <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-camera"></i> Scanner Caméra QR
+                </button>
+                <button onclick="switchTab('history')" id="tab-btn-history" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Historique Poses
+                </button>
+            </div>
+
+            <!-- TAB 1 : CATALOGUE -->
+            <div id="tab-catalog" class="space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between gap-4 items-center">
+                    <div class="relative w-full sm:w-80">
+                        <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                        <input type="text" id="search-input" oninput="renderCatalog()" placeholder="Rechercher par Eurocode, Marque..." 
+                            class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
+                    </div>
+                    <button id="btn-add-item" onclick="openModal()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20">
+                        <i class="fa-solid fa-plus"></i> Ajouter un Vitrage
+                    </button>
+                </div>
+
+                <!-- Tableau Stock -->
+                <div class="bg-slate-800/40 border border-slate-800 rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase bg-slate-800/60">
+                                    <th class="p-4">Eurocode</th>
+                                    <th class="p-4">Véhicule & Type</th>
+                                    <th class="p-4">Options / ADAS</th>
+                                    <th class="p-4">Emplacement</th>
+                                    <th class="p-4 text-center">Stock</th>
+                                    <th class="p-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="catalog-table-body" class="divide-y divide-slate-800/60 text-sm">
+                                <!-- Rempli par JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2 : SCANNER & MOUVEMENTS RAPIDES -->
+            <div id="tab-scanner" class="hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl flex flex-col items-center">
+                        <h3 class="font-semibold mb-4 flex items-center gap-2"><i class="fa-solid fa-qrcode text-blue-400"></i> Scanner Caméra Live</h3>
+                        <div id="reader" class="w-full max-w-sm rounded-xl overflow-hidden border border-slate-700 bg-slate-950 min-h-[250px]"></div>
+                        <p class="text-xs text-slate-400 mt-3 text-center">Pointez la caméra vers le QR Code EUROCODE.</p>
+                    </div>
+
+                    <div class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-semibold mb-4 flex items-center gap-2"><i class="fa-solid fa-bolt text-amber-400"></i> Action sur Pièce Scannée</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="text-xs font-medium text-slate-400">Code Eurocode Détecté / Saisi</label>
+                                    <input type="text" id="scan-result-code" readonly placeholder="Scannez ou entrez l'Eurocode..." class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-blue-400">
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-400">Type d'Action</label>
+                                    <select id="scan-action-type" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
+                                        <option value="pose">Sortie / Pose sur Véhicule (-1)</option>
+                                        <option value="reception">Entrée / Livraison Fournisseur (+1)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-slate-400">Immatriculation Véhicule & Dossier</label>
+                                    <input type="text" id="scan-details" placeholder="Ex: AA-123-BB / Dossier MAIF #4892" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="executeScanAction()" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl transition shadow-lg shadow-emerald-600/20">
+                            Valider l'Action Stock
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3 : HISTORIQUE -->
+            <div id="tab-history" class="hidden space-y-4">
+                <div class="bg-slate-800/40 border border-slate-800 rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase bg-slate-800/60">
+                                    <th class="p-4">Date / Heure</th>
+                                    <th class="p-4">Centre</th>
+                                    <th class="p-4">Mouvement</th>
+                                    <th class="p-4">Eurocode</th>
+                                    <th class="p-4">Détails / Immatriculation</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body" class="divide-y divide-slate-800/60 text-sm">
+                                <!-- Rempli par JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL AJOUT / MODIFICATION ARTICLE -->
+    <div id="item-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <h3 id="modal-title" class="text-lg font-bold">Ajouter un Vitrage</h3>
+            <input type="hidden" id="edit-id">
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                    <label class="text-xs font-medium text-slate-400">Eurocode</label>
+                    <div class="flex gap-2 mt-1">
+                        <input type="text" id="f-eurocode" placeholder="Ex: 8334AGACMVW1P" class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm uppercase font-mono text-blue-400">
+                        <button type="button" onclick="openModalScanner()" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-camera"></i> Scanner
+                        </button>
+                    </div>
+                </div>
+
+                <div id="modal-scanner-container" class="sm:col-span-2 hidden bg-slate-950 p-3 rounded-xl border border-slate-700 text-center">
+                    <div id="modal-reader" class="w-full max-w-xs mx-auto rounded-lg overflow-hidden"></div>
+                    <button type="button" onclick="closeModalScanner()" class="mt-2 text-xs text-red-400 hover:underline">Fermer la caméra</button>
+                </div>
+
+                <div>
+                    <label class="text-xs font-medium text-slate-400">Type de Vitre</label>
+                    <select id="f-type" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                        <option>Pare-brise</option>
+                        <option>Lunette arrière</option>
+                        <option>Vitre latérale</option>
+                        <option>Custode</option>
+                        <option>Toit panoramique</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-400">Marque Véhicule</label>
+                    <input type="text" id="f-marque" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-400">Modèle</label>
+                    <input type="text" id="f-modele" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-400">Options / ADAS</label>
+                    <input type="text" id="f-options" placeholder="Caméra, HUD, Chauffant..." class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-400">Emplacement (Rack)</label>
+                    <input type="text" id="f-emplacement" placeholder="Rack A-01" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-400">Quantité Initiale</label>
+                    <input type="number" id="f-qte" value="1" min="0" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-400">Seuil Alerte Min</label>
+                    <input type="number" id="f-seuil" value="2" min="1" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                <button onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Annuler</button>
+                <button onclick="saveItem()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-medium transition">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GESTION DES CENTRES -->
+    <div id="centers-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-6 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold"><i class="fa-solid fa-location-dot text-blue-400"></i> Gestion des Centres</h3>
+                <button onclick="closeCentersModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="space-y-3 bg-slate-800/40 p-4 rounded-xl border border-slate-800">
+                <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Ajouter un nouveau centre</h4>
+                <div class="flex gap-2">
+                    <input type="text" id="new-center-name" placeholder="Nom du centre..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+                    <button onclick="addNewCenter()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl text-sm font-medium transition">Ajouter</button>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Centres existants</h4>
+                <div id="centers-list-container" class="space-y-2 max-h-48 overflow-y-auto">
+                    <!-- Rempli dynamiquement -->
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-800">
+                <button onclick="closeCentersModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL QR CODE ÉTIQUETTE -->
+    <div id="qr-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xs w-full p-6 text-center space-y-4 shadow-2xl">
+            <h3 class="font-bold text-base" id="qr-modal-title">Étiquette QR Code</h3>
+            <div id="qrcode-container" class="bg-white p-4 rounded-xl inline-block mx-auto"></div>
+            <p id="qr-modal-sub" class="text-xs text-slate-400 font-mono"></p>
+            <button onclick="closeQrModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Fermer</button>
+        </div>
+    </div>
+
+    <!-- FIREBASE SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC6w45cdjy9vbkjlE_ihruyWh1P_qupijg",
+            authDomain: "stock-varglass.firebaseapp.com",
+            projectId: "stock-varglass",
+            storageBucket: "stock-varglass.firebasestorage.app",
+            messagingSenderId: "115369965226",
+            appId: "1:115369965226:web:af424fd2f9454c54f542d3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const MASTER_PASSWORD = "Vitrage2026";
+
+        let currentUserDoc = null;
+        let stockData = { "Fréjus": [], "Nice": [], "Toulon": [], "Marseille": [] };
+        let historyData = [];
+        let currentCenter = "Fréjus";
+        let mainHtml5QrCode = null;
+        let modalHtml5QrCode = null;
+        let isWriting = false;
+
+        // GESTION DE L'ÉTAT D'AUTHENTIFICATION
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Récupérer le rôle et le centre de l'utilisateur
+                const userDocRef = doc(db, "users", user.uid);
+                const snap = await getDoc(userDocRef);
+                
+                if (snap.exists()) {
+                    currentUserDoc = snap.data();
+                } else {
+                    currentUserDoc = { role: "centre", assignedCenter: "Fréjus", email: user.email };
+                }
+
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                document.getElementById('user-display-email').innerText = user.email;
+
+                applyUserPermissions();
+                initApp();
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+                document.getElementById('main-app').classList.add('hidden');
+                loadCentersForRegistration();
+            }
+        });
+
+        function applyUserPermissions() {
+            const roleBadge = document.getElementById('role-badge');
+            const btnCenters = document.getElementById('btn-centers-modal');
+
+            if (currentUserDoc.role === 'admin') {
+                roleBadge.innerText = "Admin Global";
+                roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20";
+                btnCenters.classList.remove('hidden');
+                document.getElementById('current-center').disabled = false;
+            } else {
+                roleBadge.innerText = `Centre : ${currentUserDoc.assignedCenter}`;
+                roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20";
+                btnCenters.classList.add('hidden');
+                currentCenter = currentUserDoc.assignedCenter;
+            }
+        }
+
+        window.loginUser = async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+            const errBox = document.getElementById('auth-error');
+            errBox.classList.add('hidden');
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (err) {
+                errBox.innerText = "E-mail ou mot de passe incorrect.";
+                errBox.classList.remove('hidden');
+            }
+        }
+
+        window.registerUser = async function(e) {
+            e.preventDefault();
+            const role = document.getElementById('reg-role').value;
+            const center = document.getElementById('reg-center').value;
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-password').value;
+            const masterKey = document.getElementById('reg-master-key').value;
+            const errBox = document.getElementById('reg-error');
+            errBox.classList.add('hidden');
+
+            if (masterKey !== MASTER_PASSWORD) {
+                errBox.innerText = "Mot de passe Maître d'Atelier incorrect.";
+                errBox.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                await setDoc(doc(db, "users", cred.user.uid), {
+                    email: email,
+                    role: role,
+                    assignedCenter: role === 'admin' ? 'Tous' : center
+                });
+            } catch (err) {
+                errBox.innerText = err.message || "Erreur lors de la création du compte.";
+                errBox.classList.remove('hidden');
+            }
+        }
+
+        window.logoutUser = function() {
+            signOut(auth);
+        }
+
+        window.toggleAuthMode = function(mode) {
+            if (mode === 'register') {
+                document.getElementById('login-box').classList.add('hidden');
+                document.getElementById('register-box').classList.remove('hidden');
+            } else {
+                document.getElementById('register-box').classList.add('hidden');
+                document.getElementById('login-box').classList.remove('hidden');
+            }
+        }
+
+        window.toggleRegCenterSelect = function() {
+            const role = document.getElementById('reg-role').value;
+            const container = document.getElementById('reg-center-container');
+            if (role === 'admin') {
+                container.classList.add('hidden');
+            } else {
+                container.classList.remove('hidden');
+            }
+        }
+
+        async function loadCentersForRegistration() {
+            const docRef = doc(db, "stock_global", "atelier");
+            const snap = await getDoc(docRef);
+            const select = document.getElementById('reg-center');
+            select.innerHTML = '';
+            let centers = ["Fréjus", "Nice", "Toulon", "Marseille"];
+            if (snap.exists() && snap.data().stock) {
+                centers = Object.keys(snap.data().stock);
+            }
+            centers.forEach(c => {
+                select.innerHTML += `<option value="${c}">${c}</option>`;
+            });
+        }
+
+        function initApp() {
+            const docRef = doc(db, "stock_global", "atelier");
+
+            onSnapshot(docRef, (docSnap) => {
+                if (isWriting) return;
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data && data.stock) {
+                        stockData = data.stock;
+                        historyData = data.history || [];
+                        
+                        renderCenterSelector();
+                        renderCatalog();
+                        updateStats();
+                        renderHistory();
+                    }
+                } else {
+                    saveDataToFirebase();
+                }
+            });
+        }
+
+        async function saveDataToFirebase() {
+            isWriting = true;
+            try {
+                const docRef = doc(db, "stock_global", "atelier");
+                await setDoc(docRef, { stock: stockData, history: historyData });
+            } catch (err) {
+                console.error("Erreur écriture Firebase :", err);
+            } finally {
+                setTimeout(() => { isWriting = false; }, 500);
+            }
+        }
+
+        window.saveData = function() {
+            updateStats();
+            saveDataToFirebase();
+
+            const dot = document.getElementById('sync-dot');
+            dot.className = "w-2 h-2 rounded-full bg-blue-400 inline-block animate-ping";
+            setTimeout(() => { dot.className = "w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"; }, 1000);
+        }
+
+        window.renderCenterSelector = function() {
+            const select = document.getElementById('current-center');
+            if(!select) return;
+            select.innerHTML = '';
+            
+            if (currentUserDoc.role === 'admin') {
+                Object.keys(stockData).forEach(center => {
+                    const opt = document.createElement('option');
+                    opt.value = center;
+                    opt.textContent = `Centre ${center}`;
+                    if (center === currentCenter) opt.selected = true;
+                    select.appendChild(opt);
+                });
+                select.disabled = false;
+            } else {
+                currentCenter = currentUserDoc.assignedCenter;
+                const opt = document.createElement('option');
+                opt.value = currentCenter;
+                opt.textContent = `Centre ${currentCenter}`;
+                opt.selected = true;
+                select.appendChild(opt);
+                select.disabled = true;
+            }
+        }
+
+        window.changeCenter = function() {
+            if (currentUserDoc.role === 'admin') {
+                currentCenter = document.getElementById('current-center').value;
+                renderCatalog();
+                updateStats();
+            }
+        }
+
+        window.switchTab = function(tab) {
+            ['catalog', 'scanner', 'history'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`tab-btn-${t}`).className = "pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition";
+            });
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-btn-${tab}`).className = "pb-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition";
+            
+            if (tab === 'scanner') {
+                setTimeout(startMainScanner, 300);
+            } else {
+                stopMainScanner();
+            }
+        }
+
+        function startMainScanner() {
+            if (!mainHtml5QrCode) {
+                mainHtml5QrCode = new Html5Qrcode("reader");
+            }
+            if (!mainHtml5QrCode.isScanning) {
+                mainHtml5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 250, height: 150 } },
+                    qrCodeMessage => {
+                        document.getElementById('scan-result-code').value = qrCodeMessage.trim().toUpperCase();
+                        navigator.vibrate?.(200);
+                    }
+                ).catch(err => {
+                    console.warn("Caméra principale non accessible", err);
+                });
+            }
+        }
+
+        function stopMainScanner() {
+            if (mainHtml5QrCode && mainHtml5QrCode.isScanning) {
+                mainHtml5QrCode.stop().catch(() => {});
+            }
+        }
+
+        window.renderCatalog = function() {
+            const searchInput = document.getElementById('search-input');
+            const query = searchInput ? searchInput.value.toLowerCase() : '';
+            const tbody = document.getElementById('catalog-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            const list = stockData[currentCenter] || [];
+            const filtered = list.filter(item => item.eurocode.toLowerCase().includes(query) || item.marque.toLowerCase().includes(query) || item.modele.toLowerCase().includes(query));
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">Aucun vitrage trouvé pour le centre ${currentCenter}.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const low = item.stock <= item.seuil;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-4 font-mono font-bold text-blue-400">${item.eurocode}</td>
+                        <td class="p-4">
+                            <div class="font-medium text-slate-200">${item.marque} ${item.modele}</div>
+                            <div class="text-xs text-slate-400">${item.type}</div>
+                        </td>
+                        <td class="p-4 text-xs text-slate-300">${item.options || '-'}</td>
+                        <td class="p-4 font-medium text-slate-300">${item.emplacement || '-'}</td>
+                        <td class="p-4 text-center">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold ${low ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}">
+                                ${item.stock}
+                            </span>
+                        </td>
+                        <td class="p-4 text-right space-x-2">
+                            <button onclick="showQr('${item.eurocode}')" title="Étiquette QR" class="text-slate-400 hover:text-white px-2 py-1 bg-slate-800 rounded-lg"><i class="fa-solid fa-qrcode"></i></button>
+                            <button onclick="openModal(${item.id})" title="Modifier" class="text-slate-400 hover:text-blue-400 px-2 py-1 bg-slate-800 rounded-lg"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteItem(${item.id})" title="Supprimer" class="text-slate-400 hover:text-red-400 px-2 py-1 bg-slate-800 rounded-lg"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.updateStats = function() {
+            const list = stockData[currentCenter] || [];
+            document.getElementById('stat-refs').innerText = list.length;
+            const totalStock = list.reduce((acc, item) => acc + item.stock, 0);
+            document.getElementById('stat-stock').innerText = totalStock;
+            const lowStock = list.filter(item => item.stock <= item.seuil).length;
+            document.getElementById('stat-low').innerText = lowStock;
+            
+            const monthStr = new Date().toISOString().slice(0, 7);
+            const poses = historyData.filter(h => h.center === currentCenter && h.type.includes('Sortie') && h.date.startsWith(monthStr)).length;
+            document.getElementById('stat-poses').innerText = poses;
+        }
+
+        window.openModal = function(id = null, defaultEurocode = "") {
+            document.getElementById('item-modal').classList.remove('hidden');
+            closeModalScanner();
+            if (id) {
+                document.getElementById('modal-title').innerText = "Modifier le Vitrage";
+                const item = stockData[currentCenter].find(i => i.id === id);
+                document.getElementById('edit-id').value = item.id;
+                document.getElementById('f-eurocode').value = item.eurocode;
+                document.getElementById('f-type').value = item.type;
+                document.getElementById('f-marque').value = item.marque;
+                document.getElementById('f-modele').value = item.modele;
+                document.getElementById('f-options').value = item.options;
+                document.getElementById('f-emplacement').value = item.emplacement;
+                document.getElementById('f-qte').value = item.stock;
+                document.getElementById('f-seuil').value = item.seuil;
+            } else {
+                document.getElementById('modal-title').innerText = "Ajouter un Vitrage";
+                document.getElementById('edit-id').value = "";
+                document.getElementById('f-eurocode').value = defaultEurocode;
+                document.getElementById('f-type').value = "Pare-brise";
+                document.getElementById('f-marque').value = "";
+                document.getElementById('f-modele').value = "";
+                document.getElementById('f-options').value = "";
+                document.getElementById('f-emplacement').value = "";
+                document.getElementById('f-qte').value = 1;
+                document.getElementById('f-seuil').value = 2;
+            }
+        }
+
+        window.closeModal = function() {
+            closeModalScanner();
+            document.getElementById('item-modal').classList.add('hidden');
+        }
+
+        window.openModalScanner = function() {
+            const container = document.getElementById('modal-scanner-container');
+            container.classList.remove('hidden');
+            if (!modalHtml5QrCode) {
+                modalHtml5QrCode = new Html5Qrcode("modal-reader");
+            }
+            modalHtml5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 200, height: 120 } },
+                qrCodeMessage => {
+                    document.getElementById('f-eurocode').value = qrCodeMessage.trim().toUpperCase();
+                    navigator.vibrate?.(200);
+                    closeModalScanner();
+                }
+            ).catch(err => {
+                console.warn("Caméra modale non accessible", err);
+            });
+        }
+
+        window.closeModalScanner = function() {
+            const container = document.getElementById('modal-scanner-container');
+            container.classList.add('hidden');
+            if (modalHtml5QrCode && modalHtml5QrCode.isScanning) {
+                modalHtml5QrCode.stop().catch(() => {});
+            }
+        }
+
+        window.saveItem = function() {
+            closeModalScanner();
+            const id = document.getElementById('edit-id').value;
+            const eurocode = document.getElementById('f-eurocode').value.trim().toUpperCase();
+            if (!eurocode) return alert("Veuillez saisir un Eurocode.");
+            
+            const item = {
+                id: id ? parseInt(id) : Date.now(),
+                eurocode,
+                type: document.getElementById('f-type').value,
+                marque: document.getElementById('f-marque').value,
+                modele: document.getElementById('f-modele').value,
+                options: document.getElementById('f-options').value,
+                emplacement: document.getElementById('f-emplacement').value,
+                stock: parseInt(document.getElementById('f-qte').value) || 0,
+                seuil: parseInt(document.getElementById('f-seuil').value) || 2
+            };
+
+            if (!stockData[currentCenter]) stockData[currentCenter] = [];
+            
+            if (id) {
+                const idx = stockData[currentCenter].findIndex(i => i.id == id);
+                if (idx !== -1) stockData[currentCenter][idx] = item;
+            } else {
+                stockData[currentCenter].push(item);
+            }
+
+            saveData();
+            closeModal();
+            renderCatalog();
+        }
+
+        window.deleteItem = function(id) {
+            if(confirm("Voulez-vous supprimer cette référence ?")) {
+                stockData[currentCenter] = stockData[currentCenter].filter(i => i.id !== id);
+                saveData();
+                renderCatalog();
+            }
+        }
+
+        window.openCentersModal = function() {
+            if (currentUserDoc.role !== 'admin') return;
+            document.getElementById('centers-modal').classList.remove('hidden');
+            renderCentersList();
+        }
+
+        window.closeCentersModal = function() {
+            document.getElementById('centers-modal').classList.add('hidden');
+            renderCenterSelector();
+        }
+
+        function renderCentersList() {
+            const container = document.getElementById('centers-list-container');
+            container.innerHTML = '';
+            Object.keys(stockData).forEach(center => {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between bg-slate-800 p-2.5 rounded-xl border border-slate-700">
+                        <span class="text-sm font-medium text-white">${center}</span>
+                        <div class="space-x-1">
+                            <button onclick="renameCenter('${center}')" title="Renommer" class="text-slate-400 hover:text-blue-400 px-2 py-1 bg-slate-700 rounded-lg text-xs"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteCenter('${center}')" title="Supprimer" class="text-slate-400 hover:text-red-400 px-2 py-1 bg-slate-700 rounded-lg text-xs"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.addNewCenter = function() {
+            const name = document.getElementById('new-center-name').value.trim();
+            if (!name) return alert("Veuillez saisir un nom de centre.");
+            if (stockData[name]) return alert("Ce centre existe déjà.");
+
+            stockData[name] = [];
+            saveData();
+            document.getElementById('new-center-name').value = '';
+            renderCentersList();
+            renderCenterSelector();
+        }
+
+        window.renameCenter = function(oldName) {
+            const newName = prompt(`Nouveau nom pour le centre "${oldName}" :`, oldName);
+            if (!newName || newName.trim() === oldName) return;
+            const cleanName = newName.trim();
+            if (stockData[cleanName]) return alert("Un centre avec ce nom existe déjà.");
+
+            stockData[cleanName] = stockData[oldName];
+            delete stockData[oldName];
+
+            historyData.forEach(h => {
+                if (h.center === oldName) h.center = cleanName;
+            });
+
+            if (currentCenter === oldName) currentCenter = cleanName;
+            saveData();
+            renderCentersList();
+            renderCenterSelector();
+            renderCatalog();
+        }
+
+        window.deleteCenter = function(name) {
+            if (Object.keys(stockData).length <= 1) return alert("Vous devez conserver au moins un centre.");
+            if (confirm(`Voulez-vous vraiment supprimer le centre "${name}" et tout son stock ?`)) {
+                delete stockData[name];
+                if (currentCenter === name) {
+                    currentCenter = Object.keys(stockData)[0];
+                }
+                saveData();
+                renderCentersList();
+                renderCenterSelector();
+                renderCatalog();
+                updateStats();
+            }
+        }
+
+        window.executeScanAction = function() {
+            const code = document.getElementById('scan-result-code').value.trim();
+            const action = document.getElementById('scan-action-type').value;
+            const details = document.getElementById('scan-details').value.trim();
+
+            if (!code) return alert("Veuillez scanner un Eurocode avec la caméra.");
+            
+            const item = stockData[currentCenter].find(i => i.eurocode === code);
+            
+            if (!item) {
+                if (confirm(`L'Eurocode "${code}" n'est pas répertorié dans le centre ${currentCenter}.\n\nVoulez-vous l'ajouter dès maintenant au catalogue ?`)) {
+                    openModal(null, code);
+                }
+                return;
+            }
+
+            if (action === 'pose') {
+                if (item.stock <= 0) return alert("Stock insuffisant pour effectuer cette pose.");
+                item.stock -= 1;
+                historyData.unshift({ date: new Date().toISOString().replace('T', ' ').slice(0, 19), center: currentCenter, type: 'Sortie (Pose)', eurocode: code, details: details || 'Pose atelier' });
+            } else {
+                item.stock += 1;
+                historyData.unshift({ date: new Date().toISOString().replace('T', ' ').slice(0, 19), center: currentCenter, type: 'Entrée (Livraison)', eurocode: code, details: details || 'Réception fournisseur' });
+            }
+
+            saveData();
+            renderCatalog();
+            renderHistory();
+            document.getElementById('scan-result-code').value = '';
+            document.getElementById('scan-details').value = '';
+            alert("Mouvement enregistré avec succès !");
+            switchTab('catalog');
+        }
+
+        window.renderHistory = function() {
+            const tbody = document.getElementById('history-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            if(historyData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Aucun mouvement enregistré.</td></tr>`;
+                return;
+            }
+            historyData.forEach(h => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-4 text-slate-400 text-xs">${h.date}</td>
+                        <td class="p-4 font-medium">${h.center}</td>
+                        <td class="p-4"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${h.type.includes('Sortie') ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'}">${h.type}</span></td>
+                        <td class="p-4 font-mono text-blue-400">${h.eurocode}</td>
+                        <td class="p-4 text-slate-300">${h.details}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.showQr = function(eurocode) {
+            document.getElementById('qr-modal').classList.remove('hidden');
+            document.getElementById('qr-modal-title').innerText = `Étiquette ${eurocode}`;
+            document.getElementById('qr-modal-sub').innerText = eurocode;
+            const container = document.getElementById('qrcode-container');
+            container.innerHTML = "";
+            new QRCode(container, { text: eurocode, width: 160, height: 160 });
+        }
+
+        window.closeQrModal = function() {
+            document.getElementById('qr-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
