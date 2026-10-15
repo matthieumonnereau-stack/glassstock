@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlassStock - Gestion de Stock Multi-Centres</title>
+    <title>GlassStock - Gestion Multi-Centres avec Visibilité Globale</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- QR Code Scanner & Generator Libs -->
@@ -122,6 +122,12 @@
             </div>
         </header>
 
+        <!-- BANDEAU INFORMATION CONSULTATION -->
+        <div id="read-only-banner" class="bg-blue-950/80 border-b border-blue-800/60 px-6 py-2 text-xs text-blue-300 text-center flex items-center justify-center gap-2 hidden">
+            <i class="fa-solid fa-eye text-blue-400"></i> 
+            <span>Mode Consultation Seule : Vous observez le stock de l'agence <strong id="read-only-center-name">...</strong>. Les modifications sont réservées à ce centre.</span>
+        </div>
+
         <!-- CONTENU PRINCIPAL -->
         <main class="flex-1 overflow-y-auto p-4 sm:p-6 max-w-7xl mx-auto w-full space-y-6 pb-24 sm:pb-6">
             
@@ -210,7 +216,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button onclick="executeScanAction()" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl transition shadow-lg shadow-emerald-600/20">
+                        <button id="btn-execute-scan" onclick="executeScanAction()" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl transition shadow-lg shadow-emerald-600/20">
                             Valider l'Action Stock
                         </button>
                     </div>
@@ -462,7 +468,6 @@
                 const userDocRef = doc(db, "users", user.uid);
                 const snap = await getDoc(userDocRef);
                 
-                // Si c'est votre adresse mail, attribution immédiate et forcée du rôle ADMIN GLOBAL
                 if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                     currentUserDoc = { role: "admin", assignedCenter: "Tous", email: user.email };
                 } else if (snap.exists()) {
@@ -484,6 +489,13 @@
             }
         });
 
+        // Test si l'utilisateur a le droit d'éditer le centre actuellement sélectionné
+        function canEditCurrentCenter() {
+            if (!currentUserDoc) return false;
+            if (currentUserDoc.role === 'admin') return true;
+            return currentUserDoc.assignedCenter === currentCenter;
+        }
+
         function applyUserPermissions() {
             const roleBadge = document.getElementById('role-badge');
             const btnCenters = document.getElementById('btn-centers-modal');
@@ -492,13 +504,48 @@
                 roleBadge.innerText = "Admin Global (Accès Total)";
                 roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20";
                 btnCenters.classList.remove('hidden');
-                document.getElementById('current-center').disabled = false;
             } else {
-                roleBadge.innerText = `Centre : ${currentUserDoc.assignedCenter}`;
+                roleBadge.innerText = `Centre Rattaché : ${currentUserDoc.assignedCenter}`;
                 roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20";
                 btnCenters.classList.add('hidden');
                 currentCenter = currentUserDoc.assignedCenter;
-                document.getElementById('current-center').disabled = true;
+            }
+            updateUIStateForPermissions();
+        }
+
+        function updateUIStateForPermissions() {
+            const isEditable = canEditCurrentCenter();
+            const btnAdd = document.getElementById('btn-add-item');
+            const banner = document.getElementById('read-only-banner');
+            const btnScanExec = document.getElementById('btn-execute-scan');
+
+            if (btnAdd) {
+                if (isEditable) {
+                    btnAdd.classList.remove('hidden');
+                } else {
+                    btnAdd.classList.add('hidden');
+                }
+            }
+
+            if (btnScanExec) {
+                if (isEditable) {
+                    btnScanExec.disabled = false;
+                    btnScanExec.className = "w-full mt-6 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl transition shadow-lg shadow-emerald-600/20";
+                    btnScanExec.innerText = "Valider l'Action Stock";
+                } else {
+                    btnScanExec.disabled = true;
+                    btnScanExec.className = "w-full mt-6 bg-slate-800 text-slate-500 font-medium py-3 rounded-xl border border-slate-700 cursor-not-allowed";
+                    btnScanExec.innerText = "Action réservée à l'agence " + currentCenter;
+                }
+            }
+
+            if (banner) {
+                if (!isEditable && currentUserDoc.role !== 'admin') {
+                    banner.classList.remove('hidden');
+                    document.getElementById('read-only-center-name').innerText = currentCenter;
+                } else {
+                    banner.classList.add('hidden');
+                }
             }
         }
 
@@ -617,40 +664,36 @@
             if(!select) return;
             select.innerHTML = '';
             
-            if (currentUserDoc.role === 'admin') {
-                const centers = Object.keys(stockData);
-                if (!centers.includes(currentCenter)) currentCenter = centers[0] || "Fréjus";
-                
-                centers.forEach(center => {
-                    const opt = document.createElement('option');
-                    opt.value = center;
-                    opt.textContent = `Centre ${center}`;
-                    opt.className = "text-slate-900 bg-white";
-                    if (center === currentCenter) opt.selected = true;
-                    select.appendChild(opt);
-                });
-                select.disabled = false;
-            } else {
-                currentCenter = currentUserDoc.assignedCenter;
-                const opt = document.createElement('option');
-                opt.value = currentCenter;
-                opt.textContent = `Centre ${currentCenter}`;
-                opt.className = "text-slate-900 bg-white";
-                opt.selected = true;
-                select.appendChild(opt);
-                select.disabled = true;
+            const centers = Object.keys(stockData);
+            if (!centers.includes(currentCenter)) {
+                currentCenter = (currentUserDoc && currentUserDoc.role === 'centre') 
+                    ? currentUserDoc.assignedCenter 
+                    : (centers[0] || "Fréjus");
             }
+
+            centers.forEach(center => {
+                const opt = document.createElement('option');
+                opt.value = center;
+                const isHome = (currentUserDoc && currentUserDoc.assignedCenter === center);
+                opt.textContent = `Centre ${center}` + (isHome ? " (Mon Atelier)" : "");
+                opt.className = "text-slate-900 bg-white";
+                if (center === currentCenter) opt.selected = true;
+                select.appendChild(opt);
+            });
+
+            // Toujours activé pour permettre la consultation inter-agences !
+            select.disabled = false;
             document.getElementById('inv-center-name').innerText = currentCenter;
+            updateUIStateForPermissions();
         }
 
         window.changeCenter = function() {
-            if (currentUserDoc.role === 'admin') {
-                currentCenter = document.getElementById('current-center').value;
-                document.getElementById('inv-center-name').innerText = currentCenter;
-                stopInventorySession();
-                renderCatalog();
-                updateStats();
-            }
+            currentCenter = document.getElementById('current-center').value;
+            document.getElementById('inv-center-name').innerText = currentCenter;
+            stopInventorySession();
+            updateUIStateForPermissions();
+            renderCatalog();
+            updateStats();
         }
 
         window.switchTab = function(tab) {
@@ -774,6 +817,7 @@
 
             const list = stockData[currentCenter] || [];
             const allCodesMap = new Map();
+            const isEditable = canEditCurrentCenter();
 
             list.forEach(item => {
                 allCodesMap.set(item.eurocode, {
@@ -805,10 +849,14 @@
 
                 if (diff < 0) {
                     badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20">Écart : ${diff} (Non retiré)</span>`;
-                    actionBtn = `<button onclick="correctInventoryStock('${code}', ${phys})" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">Mettre à ${phys}</button>`;
+                    actionBtn = isEditable 
+                        ? `<button onclick="correctInventoryStock('${code}', ${phys})" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">Mettre à ${phys}</button>`
+                        : `<span class="text-xs text-slate-500">Ajustement bloqué</span>`;
                 } else if (diff > 0) {
                     badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Écart : +${diff} (En plus)</span>`;
-                    actionBtn = `<button onclick="correctInventoryStock('${code}', ${phys})" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">Mettre à ${phys}</button>`;
+                    actionBtn = isEditable 
+                        ? `<button onclick="correctInventoryStock('${code}', ${phys})" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">Mettre à ${phys}</button>`
+                        : `<span class="text-xs text-slate-500">Ajustement bloqué</span>`;
                 } else {
                     badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Conforme (OK)</span>`;
                     actionBtn = `<span class="text-xs text-slate-500">Aucun</span>`;
@@ -828,6 +876,8 @@
         }
 
         window.correctInventoryStock = function(eurocode, newStockValue) {
+            if (!canEditCurrentCenter()) return alert("Vous n'avez pas le droit de modifier le stock de cette agence.");
+
             const list = stockData[currentCenter] || [];
             let item = list.find(i => i.eurocode === eurocode);
 
@@ -879,6 +929,8 @@
             container.innerHTML = '';
             
             const list = stockData[currentCenter] || [];
+            const isEditable = canEditCurrentCenter();
+
             const filtered = list.filter(item => 
                 (item.eurocode && item.eurocode.toLowerCase().includes(query)) || 
                 (item.marque && item.marque.toLowerCase().includes(query)) || 
@@ -927,6 +979,17 @@
 
                     const anneeDisplay = item.annee ? `<span class="text-xs text-blue-300 font-medium ml-1">(${item.annee})</span>` : '';
 
+                    // Boutons d'action conditionnels selon droits
+                    let actionButtons = `
+                        <button onclick="showQr('${item.eurocode}')" title="Étiquette QR" class="text-slate-400 hover:text-white px-2.5 py-1.5 bg-slate-800 rounded-lg"><i class="fa-solid fa-qrcode"></i></button>
+                    `;
+                    if (isEditable) {
+                        actionButtons += `
+                            <button onclick="openModal(${item.id})" title="Modifier" class="text-slate-400 hover:text-blue-400 px-2.5 py-1.5 bg-slate-800 rounded-lg"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteItem(${item.id})" title="Supprimer" class="text-slate-400 hover:text-red-400 px-2.5 py-1.5 bg-slate-800 rounded-lg"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                    }
+
                     rowsHtml += `
                         <tr class="${rowBgClass}">
                             <td class="p-4 font-mono font-bold text-blue-400">${item.eurocode}</td>
@@ -942,9 +1005,7 @@
                                 </span>
                             </td>
                             <td class="p-4 text-right space-x-2">
-                                <button onclick="showQr('${item.eurocode}')" title="Étiquette QR" class="text-slate-400 hover:text-white px-2.5 py-1.5 bg-slate-800 rounded-lg"><i class="fa-solid fa-qrcode"></i></button>
-                                <button onclick="openModal(${item.id})" title="Modifier" class="text-slate-400 hover:text-blue-400 px-2.5 py-1.5 bg-slate-800 rounded-lg"><i class="fa-solid fa-pen"></i></button>
-                                <button onclick="deleteItem(${item.id})" title="Supprimer" class="text-slate-400 hover:text-red-400 px-2.5 py-1.5 bg-slate-800 rounded-lg"><i class="fa-solid fa-trash"></i></button>
+                                ${actionButtons}
                             </td>
                         </tr>
                     `;
@@ -998,6 +1059,8 @@
         }
 
         window.openModal = function(id = null, defaultEurocode = "") {
+            if (!canEditCurrentCenter()) return alert("Vous n'avez pas le droit de modifier le stock de cette agence.");
+
             document.getElementById('item-modal').classList.remove('hidden');
             closeModalScanner();
             if (id) {
@@ -1063,6 +1126,8 @@
         }
 
         window.saveItem = function() {
+            if (!canEditCurrentCenter()) return alert("Vous n'avez pas le droit de modifier le stock de cette agence.");
+
             closeModalScanner();
             const id = document.getElementById('edit-id').value;
             const eurocode = document.getElementById('f-eurocode').value.trim().toUpperCase();
@@ -1097,6 +1162,8 @@
         }
 
         window.deleteItem = function(id) {
+            if (!canEditCurrentCenter()) return alert("Vous n'avez pas le droit de modifier le stock de cette agence.");
+
             if(confirm("Voulez-vous supprimer cette référence ?")) {
                 stockData[currentCenter] = stockData[currentCenter].filter(i => i.id !== id);
                 saveData();
@@ -1179,6 +1246,8 @@
         }
 
         window.executeScanAction = function() {
+            if (!canEditCurrentCenter()) return alert("Vous n'avez pas le droit d'effectuer des mouvements de stock sur une autre agence.");
+
             const code = document.getElementById('scan-result-code').value.trim();
             const action = document.getElementById('scan-action-type').value;
             const details = document.getElementById('scan-details').value.trim();
