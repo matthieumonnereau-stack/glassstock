@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlassStock - Gestion Multi-Centres avec Panneau d'Administration</title>
+    <title>GlassStock - Gestion Multi-Centres avec Suppression Utilisateur</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- QR Code Scanner & Generator Libs -->
@@ -425,12 +425,12 @@
 
     <!-- MODAL GESTION DES ACCRÉDITATIONS UTILISATEURS -->
     <div id="users-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-6 shadow-2xl">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full p-6 space-y-6 shadow-2xl">
             <div class="flex justify-between items-center">
-                <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-users-gear text-purple-400"></i> Gestion des Accréditations Utilisateurs</h3>
+                <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-users-gear text-purple-400"></i> Gestion des Accréditations & Utilisateurs</h3>
                 <button onclick="closeUsersModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <p class="text-xs text-slate-400">Modifiez en direct les rôles de vos collaborateurs. Un compte défini en "Admin / Associé" pourra modifier toutes les agences.</p>
+            <p class="text-xs text-slate-400">Gérez les rôles de vos collaborateurs ou supprimez les comptes obsolètes.</p>
             
             <div class="bg-slate-800/40 border border-slate-800 rounded-xl overflow-hidden max-h-96 overflow-y-auto">
                 <table class="w-full text-left border-collapse">
@@ -439,7 +439,7 @@
                             <th class="p-3">E-mail</th>
                             <th class="p-3">Rôle actuel</th>
                             <th class="p-3">Centre rattaché</th>
-                            <th class="p-3 text-right">Action</th>
+                            <th class="p-3 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="users-table-tbody" class="divide-y divide-slate-800/60 text-sm">
@@ -468,7 +468,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC6w45cdjy9vbkjlE_ihruyWh1P_qupijg",
@@ -540,7 +540,6 @@
                 roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20";
                 btnCenters.classList.remove('hidden');
                 
-                // Seul le propriétaire initial voit le bouton de gestion des utilisateurs complets
                 if (currentUserDoc.email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase()) {
                     btnUsers.classList.remove('hidden');
                 } else {
@@ -1286,7 +1285,7 @@
             }
         }
 
-        // --- GESTION DES ACCRÉDITATIONS UTILISATEURS ---
+        // --- GESTION DES ACCRÉDITATIONS & SUPPRESSION UTILISATEURS ---
         window.openUsersModal = async function() {
             document.getElementById('users-modal').classList.remove('hidden');
             const tbody = document.getElementById('users-table-tbody');
@@ -1299,6 +1298,7 @@
                     const uData = docSnap.data();
                     const uId = docSnap.id;
                     const isAdmin = uData.role === 'admin';
+                    const isMasterOwner = uData.email && uData.email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase();
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-800/40 transition">
@@ -1309,10 +1309,15 @@
                                 </span>
                             </td>
                             <td class="p-3 text-slate-300 text-xs">${uData.assignedCenter || 'Tous'}</td>
-                            <td class="p-3 text-right">
-                                <button onclick="toggleUserRole('${uId}', '${uData.role}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1 rounded-lg text-xs font-medium transition">
-                                    ${isAdmin ? 'Rétrograder Atelier' : 'Promouvoir Admin'}
+                            <td class="p-3 text-right space-x-1">
+                                <button onclick="toggleUserRole('${uId}', '${uData.role}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-lg text-xs font-medium transition">
+                                    ${isAdmin ? 'Rétrograder' : 'Promouvoir'}
                                 </button>
+                                ${!isMasterOwner ? `
+                                    <button onclick="deleteUserAccount('${uId}', '${uData.email}')" title="Supprimer le compte" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 px-2.5 py-1 rounded-lg text-xs font-medium transition">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                ` : ''}
                             </td>
                         </tr>
                     `;
@@ -1334,9 +1339,21 @@
                 const userRef = doc(db, "users", userId);
                 await setDoc(userRef, { role: newRole, assignedCenter: newCenter }, { merge: true });
                 alert("Accréditation mise à jour avec succès !");
-                openUsersModal(); // Rafraîchir la modale
+                openUsersModal();
             } catch (err) {
                 alert("Erreur lors de la mise à jour du rôle.");
+            }
+        }
+
+        window.deleteUserAccount = async function(userId, email) {
+            if (confirm(`Voulez-vous vraiment supprimer définitivement l'accès pour l'e-mail : ${email} ?`)) {
+                try {
+                    await deleteDoc(doc(db, "users", userId));
+                    alert("Compte supprimé de la base de données avec succès !");
+                    openUsersModal();
+                } catch (err) {
+                    alert("Erreur lors de la suppression du compte.");
+                }
             }
         }
 
