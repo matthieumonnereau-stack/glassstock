@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlassStock - Gestion de Stock Multi-Centres Sections & États</title>
+    <title>GlassStock - Gestion de Stock Multi-Centres avec Année Véhicule</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- QR Code Scanner & Generator Libs -->
@@ -178,7 +178,7 @@
                 <div class="flex flex-col sm:flex-row justify-between gap-4 items-center">
                     <div class="relative w-full sm:w-80">
                         <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
-                        <input type="text" id="search-input" oninput="renderCatalog()" placeholder="Rechercher par Eurocode, Marque..." 
+                        <input type="text" id="search-input" oninput="renderCatalog()" placeholder="Rechercher par Eurocode, Année, Modèle..." 
                             class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
                     </div>
                     <button id="btn-add-item" onclick="openModal()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20">
@@ -368,6 +368,10 @@
                     <input type="text" id="f-modele" placeholder="Ex: Golf 8" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
+                    <label class="text-xs font-medium text-slate-400">Année Véhicule</label>
+                    <input type="text" id="f-annee" placeholder="Ex: 2020-2024" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                </div>
+                <div>
                     <label class="text-xs font-medium text-slate-400">Options / ADAS</label>
                     <input type="text" id="f-options" placeholder="Caméra, HUD, Chauffant..." class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
@@ -379,7 +383,7 @@
                     <label class="text-xs font-medium text-slate-400">Quantité Initiale</label>
                     <input type="number" id="f-qte" value="1" min="0" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
-                <div>
+                <div class="sm:col-span-2">
                     <label class="text-xs font-medium text-amber-400 font-bold">Seuil Alerte Min Spécifique</label>
                     <input type="number" id="f-seuil" value="0" min="0" placeholder="Ex: 1" class="w-full mt-1 bg-slate-800 border border-amber-500/40 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
                     <p class="text-[10px] text-slate-400 mt-1">Alerte stock faible si ≤ à cette valeur.</p>
@@ -837,7 +841,7 @@
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-800/40 transition">
                         <td class="p-3 font-mono font-bold text-blue-400">${code}</td>
-                        <td class="p-3 text-slate-300 text-xs">${data.item.marque || '-'} ${data.item.modele || '-'}</td>
+                        <td class="p-3 text-slate-300 text-xs">${data.item.marque || '-'} ${data.item.modele || '-'} ${data.item.annee ? '(' + data.item.annee + ')' : ''}</td>
                         <td class="p-3 text-center font-bold">${info}</td>
                         <td class="p-3 text-center font-bold text-amber-400">${phys}</td>
                         <td class="p-3">${badge}</td>
@@ -868,6 +872,7 @@
                     etat: "Neuf",
                     marque: "Inconnu",
                     modele: "Inventaire",
+                    annee: "",
                     options: "",
                     emplacement: "Non rangé",
                     stock: newStockValue,
@@ -901,7 +906,8 @@
             const filtered = list.filter(item => 
                 (item.eurocode && item.eurocode.toLowerCase().includes(query)) || 
                 (item.marque && item.marque.toLowerCase().includes(query)) || 
-                (item.modele && item.modele.toLowerCase().includes(query))
+                (item.modele && item.modele.toLowerCase().includes(query)) ||
+                (item.annee && item.annee.toLowerCase().includes(query))
             );
             
             if (filtered.length === 0) {
@@ -909,7 +915,6 @@
                 return;
             }
 
-            // Grouper par Marque (insensible à la casse, valeur par défaut "Autre")
             const groups = {};
             filtered.forEach(item => {
                 const marqueKey = (item.marque && item.marque.trim() !== '') ? item.marque.trim() : 'Autres marques';
@@ -917,7 +922,6 @@
                 groups[marqueKey].push(item);
             });
 
-            // Trier les marques par ordre alphabétique
             const sortedBrands = Object.keys(groups).sort();
 
             sortedBrands.forEach(brand => {
@@ -927,12 +931,10 @@
                 brandItems.forEach(item => {
                     const stockVal = item.stock !== undefined ? parseInt(item.stock) : 0;
                     
-                    // Couleur stock : 0 = orange/ambre, >=1 = vert
                     let stockBadgeClass = stockVal === 0 
                         ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold' 
                         : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold';
 
-                    // Couleur de ligne selon l'état du vitrage (ex: Occasion = vert)
                     let rowBgClass = 'hover:bg-slate-800/30 transition';
                     let etatBadgeHtml = '';
 
@@ -947,11 +949,13 @@
                         etatBadgeHtml = `<span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-400">Neuf</span>`;
                     }
 
+                    const anneeDisplay = item.annee ? `<span class="text-xs text-blue-300 font-medium ml-1">(${item.annee})</span>` : '';
+
                     rowsHtml += `
                         <tr class="${rowBgClass}">
                             <td class="p-4 font-mono font-bold text-blue-400">${item.eurocode}</td>
                             <td class="p-4">
-                                <div class="font-medium text-slate-200">${item.marque} ${item.modele}</div>
+                                <div class="font-medium text-slate-200">${item.marque} ${item.modele} ${anneeDisplay}</div>
                                 <div class="text-xs text-slate-400">${item.type} • ${etatBadgeHtml}</div>
                             </td>
                             <td class="p-4 text-xs text-slate-300">${item.options || '-'}</td>
@@ -1029,6 +1033,7 @@
                 document.getElementById('f-etat').value = item.etat || "Neuf";
                 document.getElementById('f-marque').value = item.marque || "";
                 document.getElementById('f-modele').value = item.modele || "";
+                document.getElementById('f-annee').value = item.annee || "";
                 document.getElementById('f-options').value = item.options || "";
                 document.getElementById('f-emplacement').value = item.emplacement || "";
                 document.getElementById('f-qte').value = item.stock !== undefined ? item.stock : 1;
@@ -1041,6 +1046,7 @@
                 document.getElementById('f-etat').value = "Neuf";
                 document.getElementById('f-marque').value = "";
                 document.getElementById('f-modele').value = "";
+                document.getElementById('f-annee').value = "";
                 document.getElementById('f-options').value = "";
                 document.getElementById('f-emplacement').value = "";
                 document.getElementById('f-qte').value = 1;
@@ -1093,6 +1099,7 @@
                 etat: document.getElementById('f-etat').value,
                 marque: document.getElementById('f-marque').value.trim() || "Inconnue",
                 modele: document.getElementById('f-modele').value.trim(),
+                annee: document.getElementById('f-annee').value.trim(),
                 options: document.getElementById('f-options').value,
                 emplacement: document.getElementById('f-emplacement').value,
                 stock: parseInt(document.getElementById('f-qte').value) || 0,
