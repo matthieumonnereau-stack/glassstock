@@ -496,10 +496,20 @@
                     <p class="text-[10px] text-slate-400 mt-1">Alerte stock faible si ≤ à cette valeur.</p>
                 </div>
             </div>
-            <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
-                <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Annuler</button>
-                <button type="button" onclick="saveItem()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-medium transition">Enregistrer</button>
+            
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-slate-800">
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="f-saisie-multiple" class="w-4 h-4 bg-slate-900 border-slate-700 rounded text-blue-500 focus:ring-blue-500 cursor-pointer">
+                    <label for="f-saisie-multiple" class="text-xs font-medium text-slate-400 cursor-pointer select-none" title="Garde la fenêtre ouverte pour enchaîner les ajouts. Pratique pour ajouter plusieurs vitrages sur un même véhicule.">Saisie multiple continue</label>
+                </div>
+                <div class="flex justify-end gap-3 w-full sm:w-auto">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Fermer</button>
+                    <button type="button" id="btn-save-item" onclick="saveItem()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20">
+                        Enregistrer
+                    </button>
+                </div>
             </div>
+
         </div>
     </div>
 
@@ -1539,6 +1549,9 @@
         window.openModal = function(id = '', defaultEurocode = "") {
             if (!canEditCurrentCenter()) return alert("Vous n'avez pas le droit de modifier le stock de cette agence.");
 
+            // Désactiver la saisie multiple par défaut à l'ouverture
+            document.getElementById('f-saisie-multiple').checked = false;
+
             document.getElementById('item-modal').classList.remove('hidden');
             closeModalScanner();
 
@@ -1668,12 +1681,43 @@
             }
 
             saveData();
-            closeModal();
-            
             currentCategory = newType;
             renderCategoryTabs();
             renderCatalog();
-            alert("✅ Modification enregistrée avec succès !");
+
+            // === GESTION DU MODE SAISIE MULTIPLE ===
+            const isMultiple = document.getElementById('f-saisie-multiple').checked;
+
+            if (isMultiple) {
+                // On vide uniquement les données uniques (ID, Eurocode, Prix). 
+                // On conserve la Marque, le Modèle et l'Année pour faciliter l'ajout d'une 2e pièce sur le même véhicule !
+                document.getElementById('edit-id').value = "";
+                document.getElementById('edit-original-eurocode').value = "";
+                document.getElementById('f-eurocode').value = "";
+                document.getElementById('f-prix').value = "0";
+                document.getElementById('f-qte').value = "1";
+                
+                // Animation de succès sur le bouton sans bloquer l'écran avec une alert()
+                const btn = document.getElementById('btn-save-item');
+                const origText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Ajouté !';
+                btn.classList.replace('bg-blue-600', 'bg-emerald-600');
+                btn.classList.replace('hover:bg-blue-500', 'hover:bg-emerald-500');
+                btn.classList.replace('shadow-blue-600/20', 'shadow-emerald-600/20');
+                
+                setTimeout(() => {
+                    btn.innerHTML = origText;
+                    btn.classList.replace('bg-emerald-600', 'bg-blue-600');
+                    btn.classList.replace('hover:bg-emerald-500', 'hover:bg-blue-500');
+                    btn.classList.replace('shadow-emerald-600/20', 'shadow-blue-600/20');
+                }, 1500);
+
+                // On replace le curseur sur le champ Eurocode prêt à être scanné
+                document.getElementById('f-eurocode').focus();
+            } else {
+                closeModal();
+                alert("✅ Modification enregistrée avec succès !");
+            }
         }
 
         window.deleteItem = function(id, eurocode) {
