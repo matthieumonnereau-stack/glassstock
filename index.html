@@ -515,7 +515,7 @@
         const MASTER_ADMIN_EMAIL = "matthieu.monnereau@gmail.com";
 
         let currentUserDoc = null;
-        let stockData = { "Fréjus": [], "Nice": [], "Toulon": [], "Marseille": [] };
+        let stockData = { "Fréjus": [], "Marseille": [], "Nice": [], "Toulon": [] };
         let historyData = [];
         let activationCodes = [];
         let currentCenter = "Fréjus";
@@ -552,6 +552,10 @@
         function parseStr(val, defaultVal = '') {
             if (val === null || val === undefined) return defaultVal;
             return String(val).trim();
+        }
+
+        function getSortedCenters(dataObj) {
+            return Object.keys(dataObj).sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
         }
 
         onAuthStateChanged(auth, async (user) => {
@@ -677,7 +681,6 @@
             errBox.classList.add('hidden');
 
             try {
-                // Vérification du code d'activation directement dans Firebase
                 const docRef = doc(db, "stock_global", "atelier");
                 const docSnap = await getDoc(docRef);
                 let currentValidCodes = [];
@@ -692,7 +695,6 @@
                     return;
                 }
 
-                // Création du compte utilisateur Firebase
                 const cred = await createUserWithEmailAndPassword(auth, email, pass);
                 const isMasterUser = (email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase());
 
@@ -702,7 +704,6 @@
                     assignedCenter: isMasterUser ? 'Tous' : center
                 });
 
-                // Consommation et suppression du code d'activation
                 const updatedCodes = currentValidCodes.filter(c => c !== inputCode);
                 await setDoc(docRef, { activationCodes: updatedCodes }, { merge: true });
 
@@ -745,9 +746,11 @@
             const snap = await getDoc(docRef);
             const select = document.getElementById('reg-center');
             select.innerHTML = '';
-            let centers = ["Fréjus", "Nice", "Toulon", "Marseille"];
+            let centers = ["Fréjus", "Marseille", "Nice", "Toulon"];
             if (snap.exists() && snap.data().stock) {
-                centers = Object.keys(snap.data().stock);
+                centers = getSortedCenters(snap.data().stock);
+            } else {
+                centers.sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
             }
             centers.forEach(c => {
                 select.innerHTML += `<option value="${c}" class="text-slate-900 bg-white">${c}</option>`;
@@ -817,7 +820,7 @@
             if(!select) return;
             select.innerHTML = '';
             
-            const centers = Object.keys(stockData);
+            const centers = getSortedCenters(stockData);
             if (!centers.includes(currentCenter)) {
                 currentCenter = (currentUserDoc && currentUserDoc.role === 'centre') 
                     ? currentUserDoc.assignedCenter 
@@ -1445,7 +1448,8 @@
         function renderCentersList() {
             const container = document.getElementById('centers-list-container');
             container.innerHTML = '';
-            Object.keys(stockData).forEach(center => {
+            const centers = getSortedCenters(stockData);
+            centers.forEach(center => {
                 container.innerHTML += `
                     <div class="flex items-center justify-between bg-slate-800 p-2.5 rounded-xl border border-slate-700">
                         <span class="text-sm font-medium text-white">${center}</span>
@@ -1495,7 +1499,7 @@
             if (confirm(`Voulez-vous vraiment supprimer le centre "${name}" et tout son stock ?`)) {
                 delete stockData[name];
                 if (currentCenter === name) {
-                    currentCenter = Object.keys(stockData)[0];
+                    currentCenter = getSortedCenters(stockData)[0];
                 }
                 saveData();
                 renderCentersList();
