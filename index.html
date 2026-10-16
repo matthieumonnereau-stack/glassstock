@@ -1060,7 +1060,7 @@
         }
 
         // ==============================================
-        // GESTION IMPORT EXCEL (SheetJS)
+        // GESTION IMPORT EXCEL MULTI-FEUILLES (SheetJS)
         // ==============================================
         window.triggerExcelImport = function() {
             if (!canEditCurrentCenter()) return alert("Vous n'avez pas le droit de modifier le stock de cette agence.");
@@ -1077,67 +1077,69 @@
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, {type: 'array'});
                     
-                    // On prend la première feuille du classeur
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    
-                    // Conversion de la feuille en tableau d'objets JSON
-                    const rows = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
-
                     let added = 0;
                     let updated = 0;
                     let skipped = 0;
 
                     const centerStock = stockData[currentCenter] || [];
 
-                    rows.forEach(row => {
-                        // Normalisation des clés pour retrouver facilement les colonnes
-                        // (Enlève les majuscules, les accents et les espaces)
-                        const normRow = {};
-                        for (let k in row) {
-                            const cleanKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
-                            normRow[cleanKey] = row[k];
-                        }
+                    // BOUCLE SUR TOUTES LES PAGES DU FICHIER EXCEL
+                    workbook.SheetNames.forEach(sheetName => {
+                        const worksheet = workbook.Sheets[sheetName];
+                        // Conversion de la feuille courante en tableau d'objets JSON
+                        const rows = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
 
-                        const eurocode = parseStr(normRow.eurocode).toUpperCase();
-                        if (!eurocode) {
-                            skipped++;
-                            return; // Passe à la ligne suivante si pas d'Eurocode
-                        }
+                        rows.forEach(row => {
+                            // Normalisation des clés pour retrouver facilement les colonnes
+                            const normRow = {};
+                            for (let k in row) {
+                                const cleanKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
+                                normRow[cleanKey] = row[k];
+                            }
 
-                        const qty = parseNum(normRow.quantite || normRow.qte || normRow.stock, 1);
-                        const prix = parseNum(normRow.prix || normRow.prixachat, 0);
-                        const marque = parseStr(normRow.marque, "Inconnue");
-                        const modele = parseStr(normRow.modele, "");
-                        const type = parseStr(normRow.type, "PARE-BRISE");
-                        const etat = parseStr(normRow.etat, "Neuf");
+                            const eurocode = parseStr(normRow.eurocode).toUpperCase();
+                            
+                            // Si la ligne est totalement vide ou n'a pas d'eurocode
+                            if (!eurocode) {
+                                // On incrémente "skipped" seulement s'il y a d'autres infos sur la ligne
+                                if (normRow.marque || normRow.quantite || normRow.prix) skipped++;
+                                return; // Passe à la ligne suivante
+                            }
 
-                        let existingItem = centerStock.find(i => String(i.eurocode).toUpperCase() === eurocode);
+                            const qty = parseNum(normRow.quantite || normRow.qte || normRow.stock, 1);
+                            const prix = parseNum(normRow.prix || normRow.prixachat, 0);
+                            const marque = parseStr(normRow.marque, "Inconnue");
+                            const modele = parseStr(normRow.modele, "");
+                            const type = parseStr(normRow.type, "PARE-BRISE");
+                            const etat = parseStr(normRow.etat, "Neuf");
 
-                        if (existingItem) {
-                            // S'il existe déjà, on ajoute la quantité au stock existant
-                            existingItem.stock = parseNum(existingItem.stock, 0) + qty;
-                            // On met à jour le prix s'il y en a un nouveau
-                            if (prix > 0) existingItem.prix = prix;
-                            updated++;
-                        } else {
-                            // Sinon on crée une nouvelle ligne de stock
-                            centerStock.push({
-                                id: Date.now() + Math.floor(Math.random() * 1000), // Eviter les doublons d'ID sur une boucle rapide
-                                eurocode: eurocode,
-                                type: type,
-                                etat: etat,
-                                marque: marque,
-                                modele: modele,
-                                annee: parseStr(normRow.annee, ""),
-                                options: parseStr(normRow.options || normRow.adas, ""),
-                                emplacement: parseStr(normRow.emplacement || normRow.rack, ""),
-                                prix: prix,
-                                stock: qty,
-                                seuil: parseNum(normRow.seuil, 0)
-                            });
-                            added++;
-                        }
+                            let existingItem = centerStock.find(i => String(i.eurocode).toUpperCase() === eurocode);
+
+                            if (existingItem) {
+                                // S'il existe déjà, on ajoute la quantité au stock existant
+                                existingItem.stock = parseNum(existingItem.stock, 0) + qty;
+                                // On met à jour le prix s'il y en a un nouveau
+                                if (prix > 0) existingItem.prix = prix;
+                                updated++;
+                            } else {
+                                // Sinon on crée une nouvelle ligne de stock
+                                centerStock.push({
+                                    id: Date.now() + Math.floor(Math.random() * 1000000), // Eviter les doublons rapides
+                                    eurocode: eurocode,
+                                    type: type,
+                                    etat: etat,
+                                    marque: marque,
+                                    modele: modele,
+                                    annee: parseStr(normRow.annee, ""),
+                                    options: parseStr(normRow.options || normRow.adas, ""),
+                                    emplacement: parseStr(normRow.emplacement || normRow.rack, ""),
+                                    prix: prix,
+                                    stock: qty,
+                                    seuil: parseNum(normRow.seuil, 0)
+                                });
+                                added++;
+                            }
+                        });
                     });
 
                     stockData[currentCenter] = centerStock;
@@ -1146,13 +1148,13 @@
                     renderCatalog();
                     updateStats();
 
-                    alert(`Importation Excel vers le centre ${currentCenter} terminée !\n\n✔️ ${added} nouvelles pièces ajoutées\n🔄 ${updated} pièces existantes mises à jour (+ quantité)\n⚠️ ${skipped} lignes ignorées (Eurocode manquant)`);
+                    alert(`Importation Excel vers le centre ${currentCenter} terminée depuis ${workbook.SheetNames.length} page(s) !\n\n✔️ ${added} nouvelles pièces ajoutées\n🔄 ${updated} pièces existantes mises à jour (+ quantité)\n⚠️ ${skipped} lignes ignorées (Eurocode manquant)`);
 
                 } catch (err) {
                     console.error(err);
                     alert("Erreur lors de la lecture du fichier Excel. Vérifiez le format.");
                 }
-                event.target.value = ""; // Réinitialise l'input pour pouvoir réimporter le même fichier si besoin
+                event.target.value = ""; // Réinitialise l'input
             };
             reader.readAsArrayBuffer(file);
         };
