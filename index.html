@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlassStock - Gestion Multi-Centres avec Suppression Utilisateur</title>
+    <title>GlassStock - Gestion Multi-Centres avec Catégories de Pièces</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- QR Code Scanner & Generator Libs -->
@@ -155,7 +155,7 @@
                 </div>
             </div>
 
-            <!-- ONGLETS -->
+            <!-- ONGLETS PRINCIPAUX -->
             <div class="flex border-b border-slate-800 gap-6 text-sm font-medium overflow-x-auto">
                 <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="pb-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition whitespace-nowrap">
                     <i class="fa-solid fa-boxes-stacked"></i> Catalogue & Stock (Par Marque)
@@ -171,8 +171,13 @@
                 </button>
             </div>
 
-            <!-- TAB 1 : CATALOGUE GROUPÉ PAR MARQUE -->
+            <!-- TAB 1 : CATALOGUE GROUPÉ PAR MARQUE & CATÉGORIE -->
             <div id="tab-catalog" class="space-y-6">
+                <!-- ONGLETS DE CATÉGORIES DE PIÈCES (Dans l'ordre exact demandé) -->
+                <div id="category-tabs-container" class="flex border-b border-slate-800 gap-2 text-xs font-semibold overflow-x-auto pb-2">
+                    <!-- Rempli dynamiquement -->
+                </div>
+
                 <div class="flex flex-col sm:flex-row justify-between gap-4 items-center">
                     <div class="relative w-full sm:w-80">
                         <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
@@ -340,13 +345,18 @@
                 </div>
 
                 <div>
-                    <label class="text-xs font-medium text-slate-400">Type de Vitre</label>
+                    <label class="text-xs font-medium text-slate-400">Type de Pièce</label>
                     <select id="f-type" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
-                        <option class="text-slate-900 bg-white">Pare-brise</option>
-                        <option class="text-slate-900 bg-white">Lunette arrière</option>
-                        <option class="text-slate-900 bg-white">Vitre latérale</option>
-                        <option class="text-slate-900 bg-white">Custode</option>
-                        <option class="text-slate-900 bg-white">Toit panoramique</option>
+                        <option class="text-slate-900 bg-white">PARE-BRISE</option>
+                        <option class="text-slate-900 bg-white">OCCASION</option>
+                        <option class="text-slate-900 bg-white">ENJOLIVEUR</option>
+                        <option class="text-slate-900 bg-white">MONTANT</option>
+                        <option class="text-slate-900 bg-white">LUNETTE</option>
+                        <option class="text-slate-900 bg-white">VITRES LATERALES</option>
+                        <option class="text-slate-900 bg-white">TRACTEUR</option>
+                        <option class="text-slate-900 bg-white">PHARES / FEUX ARRIERES</option>
+                        <option class="text-slate-900 bg-white">RETROVISEURS</option>
+                        <option class="text-slate-900 bg-white">AUTRES</option>
                     </select>
                 </div>
                 <div>
@@ -490,6 +500,7 @@
         let stockData = { "Fréjus": [], "Nice": [], "Toulon": [], "Marseille": [] };
         let historyData = [];
         let currentCenter = "Fréjus";
+        let currentCategory = "PARE-BRISE"; // Onglet actif par défaut
         let mainHtml5QrCode = null;
         let modalHtml5QrCode = null;
         let inventoryHtml5QrCode = null;
@@ -497,6 +508,20 @@
 
         let inventoryActive = false;
         let scannedInventoryCodes = [];
+
+        // Liste exacte des catégories demandées dans l'ordre
+        const CATEGORIES_LIST = [
+            "PARE-BRISE",
+            "OCCASION",
+            "ENJOLIVEUR",
+            "MONTANT",
+            "LUNETTE",
+            "VITRES LATERALES",
+            "TRACTEUR",
+            "PHARES / FEUX ARRIERES",
+            "RETROVISEURS",
+            "AUTRES"
+        ];
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -670,6 +695,7 @@
                         historyData = data.history || [];
                         
                         renderCenterSelector();
+                        renderCategoryTabs();
                         renderCatalog();
                         updateStats();
                         renderHistory();
@@ -873,7 +899,7 @@
                     allCodesMap.get(code).physicalCount += 1;
                 } else {
                     allCodesMap.set(code, {
-                        item: { id: Date.now(), eurocode: code, marque: "Inconnu", modele: "Hors stock", type: "Inconnu" },
+                        item: { id: Date.now(), eurocode: code, marque: "Inconnu", modele: "Hors stock", type: "AUTRES" },
                         infoStock: 0,
                         physicalCount: 1
                     });
@@ -935,7 +961,7 @@
                 stockData[currentCenter].push({
                     id: Date.now(),
                     eurocode: eurocode,
-                    type: "Pare-brise",
+                    type: "AUTRES",
                     etat: "Neuf",
                     marque: "Inconnu",
                     modele: "Inventaire",
@@ -961,7 +987,41 @@
             alert(`Stock de la référence ${eurocode} mis à jour !`);
         }
 
-        // --- CATALOGUE GROUPÉ PAR SECTIONS DE MARQUES ---
+        // --- RENDU DES ONGLETS DE CATÉGORIES DE PIÈCES ---
+        window.renderCategoryTabs = function() {
+            const container = document.getElementById('category-tabs-container');
+            if(!container) return;
+            container.innerHTML = '';
+
+            const list = stockData[currentCenter] || [];
+
+            CATEGORIES_LIST.forEach(cat => {
+                const count = list.filter(item => {
+                    const t = (item.type || 'PARE-BRISE').toUpperCase();
+                    return t === cat.toUpperCase();
+                }).length;
+
+                const isActive = currentCategory === cat;
+                const activeClass = isActive 
+                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30 border-blue-500" 
+                    : "bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700";
+
+                container.innerHTML += `
+                    <button onclick="selectCategory('${cat}')" class="px-3.5 py-2 rounded-xl border font-medium transition whitespace-nowrap flex items-center gap-2 ${activeClass}">
+                        <span>${cat}</span>
+                        <span class="px-1.5 py-0.5 rounded-md text-[10px] ${isActive ? 'bg-blue-700 text-white' : 'bg-slate-900 text-slate-400'}">${count}</span>
+                    </button>
+                `;
+            });
+        }
+
+        window.selectCategory = function(cat) {
+            currentCategory = cat;
+            renderCategoryTabs();
+            renderCatalog();
+        }
+
+        // --- CATALOGUE GROUPÉ PAR SECTIONS DE MARQUES POUR LA CATÉGORIE ACTIVE ---
         window.renderCatalog = function() {
             const searchInput = document.getElementById('search-input');
             const query = searchInput ? searchInput.value.toLowerCase() : '';
@@ -972,15 +1032,23 @@
             const list = stockData[currentCenter] || [];
             const isEditable = canEditCurrentCenter();
 
-            const filtered = list.filter(item => 
-                (item.eurocode && item.eurocode.toLowerCase().includes(query)) || 
-                (item.marque && item.marque.toLowerCase().includes(query)) || 
-                (item.modele && item.modele.toLowerCase().includes(query)) ||
-                (item.annee && item.annee.toLowerCase().includes(query))
-            );
+            // Filtrer par catégorie active et recherche
+            const filtered = list.filter(item => {
+                const itemType = (item.type || 'PARE-BRISE').toUpperCase();
+                const matchesCat = itemType === currentCategory.toUpperCase();
+                
+                const matchesQuery = (
+                    (item.eurocode && item.eurocode.toLowerCase().includes(query)) || 
+                    (item.marque && item.marque.toLowerCase().includes(query)) || 
+                    (item.modele && item.modele.toLowerCase().includes(query)) ||
+                    (item.annee && item.annee.toLowerCase().includes(query))
+                );
+
+                return matchesCat && matchesQuery;
+            });
             
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="p-8 text-center text-slate-500 bg-slate-800/40 rounded-2xl border border-slate-800">Aucun vitrage trouvé pour le centre ${currentCenter}.</div>`;
+                container.innerHTML = `<div class="p-8 text-center text-slate-500 bg-slate-800/40 rounded-2xl border border-slate-800">Aucune pièce de type "${currentCategory}" trouvée pour le centre ${currentCenter}.</div>`;
                 return;
             }
 
@@ -1104,11 +1172,11 @@
             document.getElementById('item-modal').classList.remove('hidden');
             closeModalScanner();
             if (id) {
-                document.getElementById('modal-title').innerText = "Modifier le Vitrage";
+                document.getElementById('modal-title').innerText = "Modifier la Pièce";
                 const item = stockData[currentCenter].find(i => i.id === id);
                 document.getElementById('edit-id').value = item.id;
                 document.getElementById('f-eurocode').value = item.eurocode;
-                document.getElementById('f-type').value = item.type || "Pare-brise";
+                document.getElementById('f-type').value = item.type || currentCategory;
                 document.getElementById('f-etat').value = item.etat || "Neuf";
                 document.getElementById('f-marque').value = item.marque || "";
                 document.getElementById('f-modele').value = item.modele || "";
@@ -1118,10 +1186,10 @@
                 document.getElementById('f-qte').value = item.stock !== undefined ? item.stock : 1;
                 document.getElementById('f-seuil').value = item.seuil !== undefined ? item.seuil : 0;
             } else {
-                document.getElementById('modal-title').innerText = "Ajouter un Vitrage";
+                document.getElementById('modal-title').innerText = "Ajouter une Pièce";
                 document.getElementById('edit-id').value = "";
                 document.getElementById('f-eurocode').value = defaultEurocode;
-                document.getElementById('f-type').value = "Pare-brise";
+                document.getElementById('f-type').value = currentCategory;
                 document.getElementById('f-etat').value = "Neuf";
                 document.getElementById('f-marque').value = "";
                 document.getElementById('f-modele').value = "";
@@ -1198,6 +1266,7 @@
 
             saveData();
             closeModal();
+            renderCategoryTabs();
             renderCatalog();
         }
 
@@ -1207,6 +1276,7 @@
             if(confirm("Voulez-vous supprimer cette référence ?")) {
                 stockData[currentCenter] = stockData[currentCenter].filter(i => i.id !== id);
                 saveData();
+                renderCategoryTabs();
                 renderCatalog();
             }
         }
@@ -1385,6 +1455,7 @@
             }
 
             saveData();
+            renderCategoryTabs();
             renderCatalog();
             renderHistory();
             document.getElementById('scan-result-code').value = '';
