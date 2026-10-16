@@ -1200,7 +1200,8 @@
             closeModalScanner();
             if (id !== null && id !== undefined && id !== "") {
                 document.getElementById('modal-title').innerText = "Modifier la Pièce";
-                const item = stockData[currentCenter].find(i => i.id == id);
+                const numericId = Number(id);
+                const item = stockData[currentCenter].find(i => Number(i.id) === numericId);
                 if (item) {
                     document.getElementById('edit-id').value = item.id;
                     document.getElementById('f-eurocode').value = item.eurocode || "";
@@ -1273,7 +1274,7 @@
             if (!eurocode) return alert("Veuillez saisir un Eurocode.");
             
             const item = {
-                id: idVal ? parseInt(idVal) : Date.now(),
+                id: idVal ? Number(idVal) : Date.now(),
                 eurocode,
                 type: document.getElementById('f-type').value,
                 etat: document.getElementById('f-etat').value,
@@ -1290,7 +1291,8 @@
             if (!stockData[currentCenter]) stockData[currentCenter] = [];
             
             if (idVal) {
-                const idx = stockData[currentCenter].findIndex(i => i.id == idVal);
+                const numericId = Number(idVal);
+                const idx = stockData[currentCenter].findIndex(i => Number(i.id) === numericId);
                 if (idx !== -1) {
                     stockData[currentCenter][idx] = item;
                 } else {
@@ -1310,7 +1312,8 @@
             if (!canEditCurrentCenter()) return alert("Vous n'avez pas le droit de modifier le stock de cette agence.");
 
             if(confirm("Voulez-vous supprimer cette référence ?")) {
-                stockData[currentCenter] = stockData[currentCenter].filter(i => i.id !== id);
+                const numericId = Number(id);
+                stockData[currentCenter] = stockData[currentCenter].filter(i => Number(i.id) !== numericId);
                 saveData();
                 renderCategoryTabs();
                 renderCatalog();
