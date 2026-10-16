@@ -332,6 +332,10 @@
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <h3 id="modal-title" class="text-lg font-bold">Ajouter un Vitrage</h3>
             
+            <!-- CHAMPS CACHÉS POUR L'IDENTIFICATION SÉCURISÉE DE LA PIÈCE -->
+            <input type="hidden" id="edit-id" value="">
+            <input type="hidden" id="edit-original-eurocode" value="">
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="sm:col-span-2">
                     <label class="text-xs font-medium text-slate-400">Eurocode</label>
@@ -508,7 +512,6 @@
         let historyData = [];
         let currentCenter = "Fréjus";
         let currentCategory = "PARE-BRISE";
-        let currentEditIndex = -1; // MEMOIRE ROBUSTE POUR LA MODIFICATION
         
         let mainHtml5QrCode = null;
         let modalHtml5QrCode = null;
@@ -560,7 +563,9 @@
         function canEditCurrentCenter() {
             if (!currentUserDoc) return false;
             if (currentUserDoc.role === 'admin') return true;
-            return currentUserDoc.assignedCenter === currentCenter;
+            const assigned = (currentUserDoc.assignedCenter || '').trim().toLowerCase();
+            const current = (currentCenter || '').trim().toLowerCase();
+            return assigned === current;
         }
 
         function applyUserPermissions() {
@@ -721,6 +726,7 @@
                 await setDoc(docRef, { stock: stockData, history: historyData });
             } catch (err) {
                 console.error("Erreur écriture Firebase :", err);
+                alert("⚠️ Erreur de sauvegarde Firebase : " + (err.message || "Permissions insuffisantes."));
             } finally {
                 setTimeout(() => { isWriting = false; }, 500);
             }
@@ -1111,7 +1117,7 @@
 
                     const anneeDisplay = item.annee ? `<span class="text-xs text-blue-300 font-medium ml-1">(${item.annee})</span>` : '';
 
-                    const safeId = (item.id !== undefined && item.id !== null) ? item.id.toString().replace(/'/g, "\\'") : '';
+                    const safeId = (item.id !== undefined && item.id !== null) ? String(item.id).replace(/'/g, "\\'") : '';
                     const safeEurocode = (item.eurocode || '').toString().replace(/'/g, "\\'");
 
                     let actionButtons = `
@@ -1200,22 +1206,24 @@
 
             document.getElementById('item-modal').classList.remove('hidden');
             closeModalScanner();
-            
-            currentEditIndex = -1; // Réinitialisation par sécurité
-            let item = null;
+
+            document.getElementById('edit-id').value = id || "";
+            document.getElementById('edit-original-eurocode').value = defaultEurocode || "";
+
             const list = stockData[currentCenter] || [];
+            let item = null;
 
-            // RECHERCHE SÉCURISÉE EN MÉMOIRE
-            if (id !== null && id !== undefined && id !== "") {
-                currentEditIndex = list.findIndex(i => String(i.id) === String(id));
+            if (id !== "") {
+                item = list.find(i => String(i.id) === String(id));
             }
-            if (currentEditIndex === -1 && defaultEurocode !== "") {
-                currentEditIndex = list.findIndex(i => String(i.eurocode) === String(defaultEurocode));
+            if (!item && defaultEurocode !== "") {
+                item = list.find(i => String(i.eurocode).toUpperCase() === String(defaultEurocode).toUpperCase());
             }
 
-            if (currentEditIndex !== -1) {
-                item = list[currentEditIndex];
+            if (item) {
                 document.getElementById('modal-title').innerText = "Modifier la Pièce";
+                document.getElementById('edit-id').value = item.id || "";
+                document.getElementById('edit-original-eurocode').value = item.eurocode || "";
                 document.getElementById('f-eurocode').value = item.eurocode || "";
                 document.getElementById('f-type').value = item.type || currentCategory;
                 document.getElementById('f-etat').value = item.etat || "Neuf";
@@ -1284,51 +1292,48 @@
             
             if (!stockData[currentCenter]) stockData[currentCenter] = [];
             
+            const idVal = document.getElementById('edit-id').value;
+            const origEurocode = document.getElementById('edit-original-eurocode').value;
             const newType = document.getElementById('f-type').value;
 
-            // SAUVEGARDE EN SE BASANT SUR L'INDEX EN MÉMOIRE
-            if (currentEditIndex !== -1) {
-                const oldItem = stockData[currentCenter][currentEditIndex];
-                stockData[currentCenter][currentEditIndex] = {
-                    ...oldItem, // Conserve l'ID original exact
-                    eurocode: eurocode,
-                    type: newType,
-                    etat: document.getElementById('f-etat').value,
-                    marque: document.getElementById('f-marque').value.trim() || "Inconnue",
-                    modele: document.getElementById('f-modele').value.trim(),
-                    annee: document.getElementById('f-annee').value.trim(),
-                    options: document.getElementById('f-options').value,
-                    emplacement: document.getElementById('f-emplacement').value,
-                    prix: parseFloat(document.getElementById('f-prix').value) || 0,
-                    stock: parseInt(document.getElementById('f-qte').value) || 0,
-                    seuil: parseInt(document.getElementById('f-seuil').value) || 0
-                };
+            const list = stockData[currentCenter];
+            let targetIndex = -1;
+
+            if (idVal) {
+                targetIndex = list.findIndex(i => String(i.id) === String(idVal));
+            }
+            if (targetIndex === -1 && origEurocode) {
+                targetIndex = list.findIndex(i => String(i.eurocode).toUpperCase() === String(origEurocode).toUpperCase());
+            }
+
+            const itemData = {
+                id: (targetIndex !== -1 && list[targetIndex].id) ? list[targetIndex].id : (idVal ? Number(idVal) : Date.now()),
+                eurocode: eurocode,
+                type: newType,
+                etat: document.getElementById('f-etat').value,
+                marque: document.getElementById('f-marque').value.trim() || "Inconnue",
+                modele: document.getElementById('f-modele').value.trim(),
+                annee: document.getElementById('f-annee').value.trim(),
+                options: document.getElementById('f-options').value,
+                emplacement: document.getElementById('f-emplacement').value,
+                prix: parseFloat(document.getElementById('f-prix').value) || 0,
+                stock: parseInt(document.getElementById('f-qte').value) || 0,
+                seuil: parseInt(document.getElementById('f-seuil').value) || 0
+            };
+
+            if (targetIndex !== -1) {
+                list[targetIndex] = itemData;
             } else {
-                const newItem = {
-                    id: Date.now(),
-                    eurocode: eurocode,
-                    type: newType,
-                    etat: document.getElementById('f-etat').value,
-                    marque: document.getElementById('f-marque').value.trim() || "Inconnue",
-                    modele: document.getElementById('f-modele').value.trim(),
-                    annee: document.getElementById('f-annee').value.trim(),
-                    options: document.getElementById('f-options').value,
-                    emplacement: document.getElementById('f-emplacement').value,
-                    prix: parseFloat(document.getElementById('f-prix').value) || 0,
-                    stock: parseInt(document.getElementById('f-qte').value) || 0,
-                    seuil: parseInt(document.getElementById('f-seuil').value) || 0
-                };
-                stockData[currentCenter].push(newItem);
+                list.push(itemData);
             }
 
             saveData();
             closeModal();
             
-            // Bascule automatique sur la catégorie de la pièce que l'on vient de sauvegarder/modifier
-            currentCategory = newType; 
-            
+            currentCategory = newType;
             renderCategoryTabs();
             renderCatalog();
+            alert("✅ Modification enregistrée avec succès !");
         }
 
         window.deleteItem = function(id, eurocode) {
@@ -1338,11 +1343,11 @@
                 let idx = -1;
                 const list = stockData[currentCenter] || [];
                 
-                if (id !== null && id !== undefined && id !== "") {
+                if (id !== "") {
                     idx = list.findIndex(i => String(i.id) === String(id));
                 }
                 if (idx === -1 && eurocode) {
-                    idx = list.findIndex(i => String(i.eurocode) === String(eurocode));
+                    idx = list.findIndex(i => String(i.eurocode).toUpperCase() === String(eurocode).toUpperCase());
                 }
                 
                 if (idx !== -1) {
