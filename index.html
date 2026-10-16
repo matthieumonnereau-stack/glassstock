@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlassStock - Gestion Multi-Centres avec Prix d'Achat</title>
+    <title>GlassStock - Gestion Multi-Centres avec Prix d'Achat & Support</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- QR Code Scanner & Generator Libs -->
@@ -176,13 +176,16 @@
             </div>
 
             <!-- Sélecteur de Centre, Paramètres & Déconnexion -->
-            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-end flex-wrap">
                 <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
                     <i class="fa-solid fa-location-dot text-blue-400"></i>
                     <select id="current-center" onchange="changeCenter()" class="bg-transparent text-sm font-medium focus:outline-none cursor-pointer text-white">
                         <!-- Rempli dynamiquement -->
                     </select>
                 </div>
+                <button id="btn-support-modal" onclick="openSupportModal()" title="Gestion des signalements & problèmes" class="bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/30 text-amber-300 px-3 py-2 rounded-xl transition hidden flex items-center gap-1.5 text-xs font-semibold">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Support <span id="support-badge-count" class="bg-amber-500 text-slate-950 px-1.5 py-0.2 rounded-full text-[10px] font-bold hidden">0</span>
+                </button>
                 <button id="btn-generate-code" onclick="generateActivationCode()" title="Générer un code d'inscription" class="bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/30 text-amber-300 px-3 py-2 rounded-xl transition hidden flex items-center gap-1.5 text-xs font-semibold">
                     <i class="fa-solid fa-key text-amber-400"></i> Générer Code
                 </button>
@@ -228,19 +231,27 @@
             </div>
 
             <!-- ONGLETS PRINCIPAUX -->
-            <div class="flex border-b border-slate-800 gap-6 text-sm font-medium overflow-x-auto">
-                <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="pb-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition whitespace-nowrap">
-                    <i class="fa-solid fa-boxes-stacked"></i> Catalogue & Stock (Par Marque)
-                </button>
-                <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap">
-                    <i class="fa-solid fa-camera"></i> Scanner Caméra QR
-                </button>
-                <button onclick="switchTab('inventory')" id="tab-btn-inventory" class="pb-3 border-b-2 border-transparent text-amber-400 hover:text-amber-300 flex items-center gap-2 transition whitespace-nowrap">
-                    <i class="fa-solid fa-clipboard-check"></i> Mode Inventaire
-                </button>
-                <button onclick="switchTab('history')" id="tab-btn-history" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap">
-                    <i class="fa-solid fa-clock-rotate-left"></i> Historique Poses
-                </button>
+            <div class="flex border-b border-slate-800 gap-6 text-sm font-medium overflow-x-auto justify-between items-center">
+                <div class="flex gap-6 overflow-x-auto">
+                    <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="pb-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition whitespace-nowrap">
+                        <i class="fa-solid fa-boxes-stacked"></i> Catalogue & Stock (Par Marque)
+                    </button>
+                    <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap">
+                        <i class="fa-solid fa-camera"></i> Scanner Caméra QR
+                    </button>
+                    <button onclick="switchTab('inventory')" id="tab-btn-inventory" class="pb-3 border-b-2 border-transparent text-amber-400 hover:text-amber-300 flex items-center gap-2 transition whitespace-nowrap">
+                        <i class="fa-solid fa-clipboard-check"></i> Mode Inventaire
+                    </button>
+                    <button onclick="switchTab('history')" id="tab-btn-history" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Historique Poses
+                    </button>
+                </div>
+                <!-- Bouton signalement centre -->
+                <div class="pb-2">
+                    <button onclick="openReportModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Signaler un problème
+                    </button>
+                </div>
             </div>
 
             <!-- TAB 1 : CATALOGUE GROUPÉ PAR MARQUE & CATÉGORIE -->
@@ -573,6 +584,53 @@
         </div>
     </div>
 
+    <!-- MODAL SIGNALEMENT DE PROBLÈME (POUR LES CENTRES) -->
+    <div id="report-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Signaler un problème / bug</h3>
+            <p class="text-xs text-slate-400">Envoyez une description du problème rencontré directement au compte maître.</p>
+            <div>
+                <label class="text-xs font-medium text-slate-400">Message / Description</label>
+                <textarea id="report-message-input" rows="4" placeholder="Décrivez le souci ou la demande..." class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-500 text-white"></textarea>
+            </div>
+            <div class="flex justify-end gap-3 pt-2 border-t border-slate-800">
+                <button type="button" onclick="closeReportModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Annuler</button>
+                <button type="button" onclick="submitReport()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-sm font-medium transition shadow-lg shadow-amber-600/20">Envoyer le signalement</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SUPPORT & PROBLÈMES (RÉSERVÉ AU MAÎTRE) -->
+    <div id="support-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full p-6 space-y-6 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Signalements & Problèmes Ateliers</h3>
+                <button onclick="closeSupportModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <p class="text-xs text-slate-400">Retrouvez ici les éventuels problèmes ou demandes remontés par les centres.</p>
+            
+            <div class="bg-slate-800/40 border border-slate-800 rounded-xl overflow-hidden max-h-96 overflow-y-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase bg-slate-800/60">
+                            <th class="p-3">Date</th>
+                            <th class="p-3">Centre / Auteur</th>
+                            <th class="p-3">Message</th>
+                            <th class="p-3 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="support-table-tbody" class="divide-y divide-slate-800/60 text-sm">
+                        <!-- Rempli dynamiquement -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-800">
+                <button onclick="closeSupportModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Fermer</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL QR CODE INDIVIDUEL -->
     <div id="qr-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
@@ -745,27 +803,45 @@
             const btnCenters = document.getElementById('btn-centers-modal');
             const btnUsers = document.getElementById('btn-users-modal');
             const btnGenCode = document.getElementById('btn-generate-code');
+            const btnSupport = document.getElementById('btn-support-modal');
 
-            if (currentUserDoc.role === 'admin') {
+            if (currentUserDoc.email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase()) {
+                roleBadge.innerText = "Compte Maître (Accès Total)";
+                roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                btnCenters.classList.remove('hidden');
+                btnGenCode.classList.remove('hidden');
+                btnUsers.classList.remove('hidden');
+                if (btnSupport) btnSupport.classList.remove('hidden');
+                updateSupportBadgeCount();
+            } else if (currentUserDoc.role === 'admin') {
                 roleBadge.innerText = "Admin / Associé (Accès Total)";
                 roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20";
                 btnCenters.classList.remove('hidden');
                 btnGenCode.classList.remove('hidden');
-                
-                if (currentUserDoc.email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase()) {
-                    btnUsers.classList.remove('hidden');
-                } else {
-                    btnUsers.classList.add('hidden');
-                }
+                btnUsers.classList.add('hidden');
+                if (btnSupport) btnSupport.classList.add('hidden');
             } else {
                 roleBadge.innerText = `Centre Rattaché : ${currentUserDoc.assignedCenter}`;
                 roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20";
                 btnCenters.classList.add('hidden');
                 btnUsers.classList.add('hidden');
                 btnGenCode.classList.add('hidden');
+                if (btnSupport) btnSupport.classList.add('hidden');
                 currentCenter = currentUserDoc.assignedCenter;
             }
             updateUIStateForPermissions();
+        }
+
+        function updateSupportBadgeCount() {
+            const badgeCount = document.getElementById('support-badge-count');
+            if (!badgeCount) return;
+            const issues = historyData.filter(h => h.type === 'Signalement Problème');
+            if (issues.length > 0) {
+                badgeCount.innerText = issues.length;
+                badgeCount.classList.remove('hidden');
+            } else {
+                badgeCount.classList.add('hidden');
+            }
         }
 
         function updateUIStateForPermissions() {
@@ -919,6 +995,7 @@
                         renderCatalog();
                         updateStats();
                         renderHistory();
+                        updateSupportBadgeCount();
                     }
                 } else {
                     saveDataToFirebase();
@@ -1686,15 +1763,12 @@
             const isMultiple = document.getElementById('f-saisie-multiple').checked;
 
             if (isMultiple) {
-                // On vide uniquement les données uniques (ID, Eurocode, Prix). 
-                // On conserve la Marque, le Modèle et l'Année pour faciliter l'ajout d'une 2e pièce sur le même véhicule !
                 document.getElementById('edit-id').value = "";
                 document.getElementById('edit-original-eurocode').value = "";
                 document.getElementById('f-eurocode').value = "";
                 document.getElementById('f-prix').value = "0";
                 document.getElementById('f-qte').value = "1";
                 
-                // Animation de succès sur le bouton
                 const btn = document.getElementById('btn-save-item');
                 const origText = btn.innerHTML;
                 btn.innerHTML = '<i class="fa-solid fa-check"></i> Ajouté !';
@@ -1885,6 +1959,86 @@
             }
         }
 
+        // === FONCTIONS SIGNALEMENT & SUPPORT ===
+        window.openReportModal = function() {
+            document.getElementById('report-message-input').value = '';
+            document.getElementById('report-modal').classList.remove('hidden');
+        }
+
+        window.closeReportModal = function() {
+            document.getElementById('report-modal').classList.add('hidden');
+        }
+
+        window.submitReport = function() {
+            const msg = document.getElementById('report-message-input').value.trim();
+            if (!msg) return alert("Veuillez saisir une description du problème.");
+
+            historyData.unshift({
+                date: new Date().toISOString().replace('T', ' ').slice(0, 19),
+                center: currentCenter,
+                type: 'Signalement Problème',
+                eurocode: 'SUPPORT',
+                details: `${currentUserDoc ? currentUserDoc.email : 'Inconnu'} : ${msg}`
+            });
+
+            saveData();
+            closeReportModal();
+            alert("✅ Votre signalement a été transmis au compte maître avec succès !");
+        }
+
+        window.openSupportModal = function() {
+            if (!currentUserDoc || currentUserDoc.email.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase()) return;
+            document.getElementById('support-modal').classList.remove('hidden');
+            renderSupportTable();
+        }
+
+        window.closeSupportModal = function() {
+            document.getElementById('support-modal').classList.add('hidden');
+        }
+
+        function renderSupportTable() {
+            const tbody = document.getElementById('support-table-tbody');
+            tbody.innerHTML = '';
+            
+            const issues = historyData.filter(h => h.type === 'Signalement Problème');
+
+            if (issues.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucun signalement pour le moment.</td></tr>`;
+                return;
+            }
+
+            issues.forEach((issue, index) => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="p-3 text-xs text-slate-400">${issue.date}</td>
+                        <td class="p-3 font-medium text-white">${issue.center}</td>
+                        <td class="p-3 text-slate-300 text-xs">${issue.details}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="resolveIssue(${index})" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-lg text-xs font-medium transition">
+                                Marquer résolu
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.resolveIssue = function(index) {
+            const issues = historyData.filter(h => h.type === 'Signalement Problème');
+            const target = issues[index];
+            if (target) {
+                const realIdx = historyData.indexOf(target);
+                if (realIdx !== -1) {
+                    historyData.splice(realIdx, 1);
+                    saveData();
+                    renderSupportTable();
+                    updateSupportBadgeCount();
+                    alert("Signalement résolu et archivé !");
+                }
+            }
+        }
+        // ====================================
+
         window.executeScanAction = function() {
             if (!canEditCurrentCenter()) return alert("Vous n'avez pas le droit d'effectuer des mouvements de stock sur une autre agence.");
 
@@ -1926,11 +2080,13 @@
             const tbody = document.getElementById('history-table-body');
             if(!tbody) return;
             tbody.innerHTML = '';
-            if(historyData.length === 0) {
+            // On exclut les signalements de l'historique de stock classique si besoin, ou on les laisse
+            const normalHistory = historyData.filter(h => h.type !== 'Signalement Problème');
+            if(normalHistory.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Aucun mouvement enregistré.</td></tr>`;
                 return;
             }
-            historyData.forEach(h => {
+            normalHistory.forEach(h => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-800/30 transition">
                         <td class="p-4 text-slate-400 text-xs">${h.date}</td>
