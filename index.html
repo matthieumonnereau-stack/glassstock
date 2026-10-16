@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlassStock - Gestion Multi-Centres & Support</title>
+    <title>GlassStock - Mondial Pare-Brise</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- QR Code Scanner & Generator Libs -->
@@ -81,74 +81,74 @@
         }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 h-full flex flex-col">
+<body class="bg-[#0B1B3D] text-slate-100 h-full flex flex-col">
 
     <!-- ÉCRAN DE CONNEXION ET CRÉATION DE COMPTE -->
-    <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-md w-full shadow-2xl text-center">
-            <div class="w-16 h-16 bg-blue-600/20 text-blue-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
-                <i class="fa-solid fa-user-shield"></i>
+    <div id="auth-screen" class="fixed inset-0 z-50 bg-[#07132B] flex items-center justify-center p-4">
+        <div class="bg-[#0E234F] border border-blue-900/50 p-8 rounded-2xl max-w-md w-full shadow-2xl text-center">
+            <div class="w-16 h-16 bg-[#FFC62D]/20 text-[#FFC62D] rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border border-[#FFC62D]/30">
+                <i class="fa-solid fa-car-burst"></i>
             </div>
             
             <!-- FORMULAIRE DE CONNEXION -->
             <div id="login-box">
-                <h2 class="text-2xl font-bold mb-2">Connexion Atelier</h2>
-                <p class="text-slate-400 text-sm mb-6">Connectez-vous pour accéder à la gestion des stocks.</p>
+                <h2 class="text-2xl font-bold mb-2">Mondial Pare-Brise</h2>
+                <p class="text-slate-300 text-sm mb-6">Connexion sécurisée au stock de l'atelier.</p>
                 <form onsubmit="loginUser(event)" class="space-y-4 text-left">
                     <div>
-                        <label class="text-xs font-medium text-slate-400">Adresse E-mail</label>
+                        <label class="text-xs font-medium text-slate-300">Adresse E-mail</label>
                         <input type="email" id="login-email" placeholder="ex: centre@varglass.fr" required
-                            class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+                            class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#FFC62D]">
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-400">Mot de passe</label>
+                        <label class="text-xs font-medium text-slate-300">Mot de passe</label>
                         <input type="password" id="login-password" placeholder="••••••••" required
-                            class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+                            class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#FFC62D]">
                     </div>
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-blue-600/20 mt-2">
+                    <button type="submit" class="w-full bg-[#0066BA] hover:bg-[#005294] text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-blue-600/30 mt-2 border border-blue-400/30">
                         Se connecter
                     </button>
-                    <p id="auth-error" class="text-red-400 text-xs text-center hidden mt-2"></p>
+                    <p id="auth-error" class="text-amber-400 text-xs text-center hidden mt-2"></p>
                 </form>
-                <div class="mt-6 pt-4 border-t border-slate-800 flex justify-between text-xs">
-                    <span class="text-slate-400">Nouveau centre ?</span>
-                    <button onclick="toggleAuthMode('register')" class="text-blue-400 hover:underline font-medium">Créer un compte atelier</button>
+                <div class="mt-6 pt-4 border-t border-blue-900/40 flex justify-between text-xs">
+                    <span class="text-slate-300">Nouveau centre ?</span>
+                    <button onclick="toggleAuthMode('register')" class="text-[#FFC62D] hover:underline font-medium">Créer un compte atelier</button>
                 </div>
             </div>
 
             <!-- FORMULAIRE D'INSCRIPTION -->
             <div id="register-box" class="hidden text-left">
                 <h2 class="text-2xl font-bold mb-2 text-center">Création Compte Atelier</h2>
-                <p class="text-slate-400 text-sm mb-6 text-center">Enregistrez l'accès pour votre centre.</p>
+                <p class="text-slate-300 text-sm mb-6 text-center">Enregistrez l'accès pour votre centre.</p>
                 <form onsubmit="registerUser(event)" class="space-y-3">
                     <div>
-                        <label class="text-xs font-medium text-amber-400 font-bold">Code d'activation (6 chiffres)</label>
+                        <label class="text-xs font-medium text-[#FFC62D] font-bold">Code d'activation (6 chiffres)</label>
                         <input type="text" id="reg-code" placeholder="Ex: 849201" maxlength="6" inputmode="numeric" required pattern="[0-9]{6}"
-                            class="w-full mt-1 bg-slate-800 border border-amber-500/40 rounded-xl px-4 py-2.5 text-sm text-amber-300 font-mono tracking-widest text-center font-bold focus:outline-none focus:border-amber-500">
+                            class="w-full mt-1 bg-[#091735] border border-[#FFC62D]/40 rounded-xl px-4 py-2.5 text-sm text-[#FFC62D] font-mono tracking-widest text-center font-bold focus:outline-none focus:border-[#FFC62D]">
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-400">Centre rattaché</label>
-                        <select id="reg-center" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                        <label class="text-xs font-medium text-slate-300">Centre rattaché</label>
+                        <select id="reg-center" class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FFC62D]">
                             <!-- Rempli dynamiquement -->
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-400">Adresse E-mail</label>
+                        <label class="text-xs font-medium text-slate-300">Adresse E-mail</label>
                         <input type="email" id="reg-email" placeholder="frejus@varglass.fr" required
-                            class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                            class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FFC62D]">
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-400">Mot de passe</label>
+                        <label class="text-xs font-medium text-slate-300">Mot de passe</label>
                         <input type="password" id="reg-password" placeholder="••••••••" required minlength="6"
-                            class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                            class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FFC62D]">
                     </div>
-                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-emerald-600/20 mt-2">
+                    <button type="submit" class="w-full bg-[#FFC62D] hover:bg-[#e6b122] text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-amber-500/20 mt-2">
                         Créer le compte Atelier
                     </button>
-                    <p id="reg-error" class="text-red-400 text-xs text-center hidden mt-2"></p>
+                    <p id="reg-error" class="text-amber-400 text-xs text-center hidden mt-2"></p>
                 </form>
-                <div class="mt-4 pt-3 border-t border-slate-800 text-center text-xs">
-                    <button onclick="toggleAuthMode('login')" class="text-slate-400 hover:text-white">← Retour à la connexion</button>
+                <div class="mt-4 pt-3 border-t border-blue-900/40 text-center text-xs">
+                    <button onclick="toggleAuthMode('login')" class="text-slate-300 hover:text-white">← Retour à la connexion</button>
                 </div>
             </div>
 
@@ -158,18 +158,19 @@
     <!-- APPLICATION PRINCIPALE -->
     <div id="main-app" class="flex-1 flex flex-col h-full hidden">
         <!-- HEADER -->
-        <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <header class="bg-[#0B1B3D] border-b border-blue-900/40 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-md">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/30">
+                <div class="w-10 h-10 bg-[#FFC62D] rounded-xl flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-amber-500/20">
                     <i class="fa-solid fa-car-burst"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg flex items-center gap-2">
-                        GlassStock 
-                        <span id="role-badge" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">...</span>
+                    <h1 class="font-bold text-lg flex items-center gap-2 text-white">
+                        Mondial Pare-Brise 
+                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#FFC62D] text-slate-950">STOCK</span>
+                        <span id="role-badge" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20">...</span>
                     </h1>
-                    <p class="text-xs text-slate-400 flex items-center gap-1.5" id="sync-status">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" id="sync-dot"></span> 
+                    <p class="text-xs text-slate-300 flex items-center gap-1.5" id="sync-status">
+                        <span class="w-2 h-2 rounded-full bg-[#FFC62D] inline-block animate-pulse" id="sync-dot"></span> 
                         <span id="user-display-email">Non connecté</span>
                     </p>
                 </div>
@@ -177,22 +178,22 @@
 
             <!-- Sélecteur de Centre, Paramètres & Déconnexion -->
             <div class="flex items-center gap-3 w-full sm:w-auto justify-end flex-wrap">
-                <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
-                    <i class="fa-solid fa-location-dot text-blue-400"></i>
+                <div class="flex items-center gap-2 bg-[#0E234F] px-3 py-1.5 rounded-xl border border-blue-900/60">
+                    <i class="fa-solid fa-location-dot text-[#FFC62D]"></i>
                     <select id="current-center" onchange="changeCenter()" class="bg-transparent text-sm font-medium focus:outline-none cursor-pointer text-white">
                         <!-- Rempli dynamiquement -->
                     </select>
                 </div>
-                <button id="btn-support-modal" onclick="openSupportModal()" title="Gestion des signalements & problèmes" class="bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/30 text-amber-300 px-3 py-2 rounded-xl transition hidden flex items-center gap-1.5 text-xs font-semibold">
-                    <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Support <span id="support-badge-count" class="bg-amber-500 text-slate-950 px-1.5 py-0.2 rounded-full text-[10px] font-bold hidden">0</span>
+                <button id="btn-support-modal" onclick="openSupportModal()" title="Gestion des signalements & problèmes" class="bg-[#FFC62D]/15 hover:bg-[#FFC62D]/25 border border-[#FFC62D]/30 text-[#FFC62D] px-3 py-2 rounded-xl transition hidden flex items-center gap-1.5 text-xs font-semibold">
+                    <i class="fa-solid fa-triangle-exclamation text-[#FFC62D]"></i> Support <span id="support-badge-count" class="bg-[#FFC62D] text-slate-950 px-1.5 py-0.2 rounded-full text-[10px] font-bold hidden">0</span>
                 </button>
-                <button id="btn-generate-code" onclick="generateActivationCode()" title="Générer un code d'inscription" class="bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/30 text-amber-300 px-3 py-2 rounded-xl transition hidden flex items-center gap-1.5 text-xs font-semibold">
-                    <i class="fa-solid fa-key text-amber-400"></i> Générer Code
+                <button id="btn-generate-code" onclick="generateActivationCode()" title="Générer un code d'inscription" class="bg-[#FFC62D]/15 hover:bg-[#FFC62D]/25 border border-[#FFC62D]/30 text-[#FFC62D] px-3 py-2 rounded-xl transition hidden flex items-center gap-1.5 text-xs font-semibold">
+                    <i class="fa-solid fa-key text-[#FFC62D]"></i> Générer Code
                 </button>
                 <button id="btn-users-modal" onclick="openUsersModal()" title="Gestion des accréditations utilisateurs" class="bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 px-3 py-2 rounded-xl transition hidden">
                     <i class="fa-solid fa-users-gear"></i>
                 </button>
-                <button id="btn-centers-modal" onclick="openCentersModal()" title="Paramètres des centres" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-2 rounded-xl text-slate-300 transition hidden">
+                <button id="btn-centers-modal" onclick="openCentersModal()" title="Paramètres des centres" class="bg-[#0E234F] hover:bg-blue-900/50 border border-blue-900/60 px-3 py-2 rounded-xl text-slate-300 transition hidden">
                     <i class="fa-solid fa-gear"></i>
                 </button>
                 <button onclick="logoutUser()" title="Se déconnecter" class="bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 px-3 py-2 rounded-xl transition">
@@ -202,9 +203,9 @@
         </header>
 
         <!-- BANDEAU INFORMATION CONSULTATION -->
-        <div id="read-only-banner" class="bg-blue-950/80 border-b border-blue-800/60 px-6 py-2 text-xs text-blue-300 text-center flex items-center justify-center gap-2 hidden">
-            <i class="fa-solid fa-eye text-blue-400"></i> 
-            <span>Mode Consultation Seule : Vous observez le stock de l'agence <strong id="read-only-center-name">...</strong>. Les modifications sont réservées à ce centre.</span>
+        <div id="read-only-banner" class="bg-blue-950/90 border-b border-blue-800/60 px-6 py-2 text-xs text-blue-200 text-center flex items-center justify-center gap-2 hidden">
+            <i class="fa-solid fa-eye text-[#FFC62D]"></i> 
+            <span>Mode Consultation Seule : Vous observez le stock de l'agence <strong id="read-only-center-name" class="text-white">...</strong>. Les modifications sont réservées à ce centre.</span>
         </div>
 
         <!-- CONTENU PRINCIPAL ÉLARGI À 100% -->
@@ -212,44 +213,44 @@
             
             <!-- STATISTIQUES -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="bg-slate-800/50 border border-slate-800 p-4 rounded-2xl">
-                    <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Références</p>
-                    <h3 class="text-2xl font-bold mt-1" id="stat-refs">0</h3>
+                <div class="bg-[#0E234F]/70 border border-blue-900/50 p-4 rounded-2xl shadow-sm">
+                    <p class="text-xs text-slate-300 font-medium uppercase tracking-wider">Références</p>
+                    <h3 class="text-2xl font-bold mt-1 text-white" id="stat-refs">0</h3>
                 </div>
-                <div class="bg-slate-800/50 border border-slate-800 p-4 rounded-2xl">
-                    <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Pare-Brises en Stock</p>
-                    <h3 class="text-2xl font-bold mt-1 text-blue-400" id="stat-stock">0</h3>
+                <div class="bg-[#0E234F]/70 border border-blue-900/50 p-4 rounded-2xl shadow-sm">
+                    <p class="text-xs text-slate-300 font-medium uppercase tracking-wider">Pare-Brises en Stock</p>
+                    <h3 class="text-2xl font-bold mt-1 text-[#FFC62D]" id="stat-stock">0</h3>
                 </div>
-                <div class="bg-slate-800/50 border border-slate-800 p-4 rounded-2xl">
-                    <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Stock Faible</p>
+                <div class="bg-[#0E234F]/70 border border-blue-900/50 p-4 rounded-2xl shadow-sm">
+                    <p class="text-xs text-slate-300 font-medium uppercase tracking-wider">Stock Faible</p>
                     <h3 class="text-2xl font-bold mt-1 text-amber-400" id="stat-low">0</h3>
                 </div>
-                <div class="bg-slate-800/50 border border-slate-800 p-4 rounded-2xl">
-                    <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Valeur du Stock</p>
+                <div class="bg-[#0E234F]/70 border border-blue-900/50 p-4 rounded-2xl shadow-sm">
+                    <p class="text-xs text-slate-300 font-medium uppercase tracking-wider">Valeur du Stock</p>
                     <h3 class="text-2xl font-bold mt-1 text-emerald-400" id="stat-valeur">0 €</h3>
                 </div>
             </div>
 
             <!-- ONGLETS PRINCIPAUX -->
-            <div class="flex border-b border-slate-800 gap-6 text-sm font-medium overflow-x-auto justify-between items-center">
+            <div class="flex border-b border-blue-900/50 gap-6 text-sm font-medium overflow-x-auto justify-between items-center">
                 <div class="flex gap-6 overflow-x-auto">
-                    <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="pb-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition whitespace-nowrap">
+                    <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="pb-3 border-b-2 border-[#FFC62D] text-[#FFC62D] flex items-center gap-2 transition whitespace-nowrap">
                         <i class="fa-solid fa-boxes-stacked"></i> Catalogue & Stock (Par Marque)
                     </button>
-                    <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap">
+                    <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="pb-3 border-b-2 border-transparent text-slate-300 hover:text-white flex items-center gap-2 transition whitespace-nowrap">
                         <i class="fa-solid fa-camera"></i> Scanner Caméra QR
                     </button>
-                    <button onclick="switchTab('inventory')" id="tab-btn-inventory" class="pb-3 border-b-2 border-transparent text-amber-400 hover:text-amber-300 flex items-center gap-2 transition whitespace-nowrap">
+                    <button onclick="switchTab('inventory')" id="tab-btn-inventory" class="pb-3 border-b-2 border-transparent text-slate-300 hover:text-white flex items-center gap-2 transition whitespace-nowrap">
                         <i class="fa-solid fa-clipboard-check"></i> Mode Inventaire
                     </button>
-                    <button onclick="switchTab('history')" id="tab-btn-history" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap">
+                    <button onclick="switchTab('history')" id="tab-btn-history" class="pb-3 border-b-2 border-transparent text-slate-300 hover:text-white flex items-center gap-2 transition whitespace-nowrap">
                         <i class="fa-solid fa-clock-rotate-left"></i> Historique Poses
                     </button>
                 </div>
                 <!-- Bouton signalement centre -->
                 <div class="pb-2">
-                    <button onclick="openReportModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Signaler un problème
+                    <button onclick="openReportModal()" class="bg-[#0E234F] hover:bg-blue-900/50 border border-blue-900/60 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 shadow">
+                        <i class="fa-solid fa-triangle-exclamation text-[#FFC62D]"></i> Signaler un problème
                     </button>
                 </div>
             </div>
@@ -257,7 +258,7 @@
             <!-- TAB 1 : CATALOGUE GROUPÉ PAR MARQUE & CATÉGORIE -->
             <div id="tab-catalog" class="space-y-6">
                 <!-- ONGLETS DE CATÉGORIES DE PIÈCES -->
-                <div id="category-tabs-container" class="flex border-b border-slate-800 gap-2 text-xs font-semibold overflow-x-auto pb-2">
+                <div id="category-tabs-container" class="flex border-b border-blue-950 gap-2 text-xs font-semibold overflow-x-auto pb-2">
                     <!-- Rempli dynamiquement -->
                 </div>
 
@@ -267,21 +268,21 @@
                         <div class="relative w-full sm:w-72">
                             <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
                             <input type="text" id="search-input" oninput="renderCatalog()" placeholder="Rechercher dans ce centre..." 
-                                class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
+                                class="w-full bg-[#0E234F] border border-blue-900/60 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-[#FFC62D] text-white">
                         </div>
                         <!-- Recherche globale tous centres -->
                         <div class="relative w-full sm:w-80">
-                            <i class="fa-solid fa-globe absolute left-3.5 top-3.5 text-purple-400 text-sm"></i>
+                            <i class="fa-solid fa-globe absolute left-3.5 top-3.5 text-[#FFC62D] text-sm"></i>
                             <input type="text" id="global-search-input" oninput="renderCatalog()" placeholder="🔍 Chercher dans TOUS les centres..." 
-                                class="w-full bg-purple-950/20 border border-purple-500/40 rounded-xl pl-10 pr-4 py-2.5 text-sm text-purple-200 focus:outline-none focus:border-purple-500 placeholder-purple-300/50">
+                                class="w-full bg-[#0A1836] border border-[#FFC62D]/40 rounded-xl pl-10 pr-4 py-2.5 text-sm text-blue-200 focus:outline-none focus:border-[#FFC62D] placeholder-blue-300/40">
                         </div>
                     </div>
                     
                     <div class="flex gap-2 w-full lg:w-auto justify-end">
-                        <button onclick="printAllQRCodes()" class="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-print text-amber-400"></i> Planche QR Codes
+                        <button onclick="printAllQRCodes()" class="flex-1 sm:flex-none bg-[#0E234F] hover:bg-blue-900/50 border border-blue-900/60 text-slate-200 px-4 py-2.5 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2 shadow">
+                            <i class="fa-solid fa-print text-[#FFC62D]"></i> Planche QR Codes
                         </button>
-                        <button id="btn-add-item" onclick="openModal()" class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20">
+                        <button id="btn-add-item" onclick="openModal()" class="flex-1 sm:flex-none bg-[#0066BA] hover:bg-[#005294] text-white px-4 py-2.5 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 border border-blue-400/30">
                             <i class="fa-solid fa-plus"></i> Ajouter un Vitrage
                         </button>
                     </div>
@@ -296,34 +297,34 @@
             <!-- TAB 2 : SCANNER & MOUVEMENTS RAPIDES -->
             <div id="tab-scanner" class="hidden space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl flex flex-col items-center">
-                        <h3 class="font-semibold mb-4 flex items-center gap-2"><i class="fa-solid fa-qrcode text-blue-400"></i> Scanner Caméra Live</h3>
-                        <div id="reader" class="w-full max-w-sm rounded-xl overflow-hidden border border-slate-700 bg-slate-950 min-h-[250px]"></div>
-                        <p class="text-xs text-slate-400 mt-3 text-center">Pointez la caméra vers le QR Code EUROCODE.</p>
+                    <div class="bg-[#0E234F]/50 border border-blue-900/50 p-6 rounded-2xl flex flex-col items-center">
+                        <h3 class="font-semibold mb-4 flex items-center gap-2 text-white"><i class="fa-solid fa-qrcode text-[#FFC62D]"></i> Scanner Caméra Live</h3>
+                        <div id="reader" class="w-full max-w-sm rounded-xl overflow-hidden border border-blue-900/60 bg-slate-950 min-h-[250px]"></div>
+                        <p class="text-xs text-slate-300 mt-3 text-center">Pointez la caméra vers le QR Code EUROCODE.</p>
                     </div>
 
-                    <div class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
+                    <div class="bg-[#0E234F]/50 border border-blue-900/50 p-6 rounded-2xl flex flex-col justify-between">
                         <div>
-                            <h3 class="font-semibold mb-4 flex items-center gap-2"><i class="fa-solid fa-bolt text-amber-400"></i> Action sur Pièce Scannée</h3>
+                            <h3 class="font-semibold mb-4 flex items-center gap-2 text-white"><i class="fa-solid fa-bolt text-[#FFC62D]"></i> Action sur Pièce Scannée</h3>
                             <div class="space-y-4">
                                 <div>
-                                    <label class="text-xs font-medium text-slate-400">Code Eurocode Détecté / Saisi</label>
-                                    <input type="text" id="scan-result-code" readonly placeholder="Scannez ou entrez l'Eurocode..." class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-blue-400">
+                                    <label class="text-xs font-medium text-slate-300">Code Eurocode Détecté / Saisi</label>
+                                    <input type="text" id="scan-result-code" readonly placeholder="Scannez ou entrez l'Eurocode..." class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-4 py-2.5 text-sm font-mono text-[#FFC62D]">
                                 </div>
                                 <div>
-                                    <label class="text-xs font-medium text-slate-400">Type d'Action</label>
-                                    <select id="scan-action-type" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
+                                    <label class="text-xs font-medium text-slate-300">Type d'Action</label>
+                                    <select id="scan-action-type" class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#FFC62D] text-white">
                                         <option value="pose">Sortie / Pose sur Véhicule (-1)</option>
                                         <option value="reception">Entrée / Livraison Fournisseur (+1)</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="text-xs font-medium text-slate-400">Immatriculation Véhicule & Dossier</label>
-                                    <input type="text" id="scan-details" placeholder="Ex: AA-123-BB / Dossier MAIF #4892" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
+                                    <label class="text-xs font-medium text-slate-300">Immatriculation Véhicule & Dossier</label>
+                                    <input type="text" id="scan-details" placeholder="Ex: AA-123-BB / Dossier MAIF #4892" class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#FFC62D] text-white">
                                 </div>
                             </div>
                         </div>
-                        <button id="btn-execute-scan" onclick="executeScanAction()" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl transition shadow-lg shadow-emerald-600/20">
+                        <button id="btn-execute-scan" onclick="executeScanAction()" class="w-full mt-6 bg-[#0066BA] hover:bg-[#005294] text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-blue-600/30 border border-blue-400/30">
                             Valider l'Action Stock
                         </button>
                     </div>
@@ -332,14 +333,14 @@
 
             <!-- TAB : MODE INVENTAIRE PHYSIQUE -->
             <div id="tab-inventory" class="hidden space-y-6">
-                <div class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl space-y-6">
+                <div class="bg-[#0E234F]/50 border border-blue-900/50 p-6 rounded-2xl space-y-6">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-clipboard-check text-amber-400"></i> Inventaire Physique - Centre <span id="inv-center-name" class="text-blue-400"></span></h3>
-                            <p class="text-xs text-slate-400 mt-1">Scannez successivement tous les QR codes présents physiquement dans l'atelier, puis lancez le comparatif informatique.</p>
+                            <h3 class="text-lg font-bold flex items-center gap-2 text-white"><i class="fa-solid fa-clipboard-check text-[#FFC62D]"></i> Inventaire Physique - Centre <span id="inv-center-name" class="text-[#FFC62D]"></span></h3>
+                            <p class="text-xs text-slate-300 mt-1">Scannez successivement tous les QR codes présents physiquement dans l'atelier, puis lancez le comparatif informatique.</p>
                         </div>
                         <div class="flex gap-2 w-full sm:w-auto">
-                            <button onclick="startInventorySession()" id="btn-start-inv" class="flex-1 sm:flex-none bg-amber-600 hover:bg-amber-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-lg shadow-amber-600/20">
+                            <button onclick="startInventorySession()" id="btn-start-inv" class="flex-1 sm:flex-none bg-[#FFC62D] hover:bg-[#e6b122] text-slate-950 font-bold px-4 py-2.5 rounded-xl text-sm transition shadow-lg shadow-amber-500/20">
                                 <i class="fa-solid fa-play"></i> Démarrer l'inventaire
                             </button>
                             <button onclick="finishInventorySession()" id="btn-finish-inv" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-lg shadow-emerald-600/20 hidden">
@@ -352,36 +353,36 @@
                     </div>
 
                     <!-- Caméra et Compteur d'inventaire -->
-                    <div id="inv-scanner-box" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-800">
+                    <div id="inv-scanner-box" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-blue-900/60">
                         <div class="flex flex-col items-center">
-                            <div id="inventory-reader" class="w-full max-w-sm rounded-xl overflow-hidden border border-slate-700 bg-slate-950 min-h-[220px]"></div>
-                            <p class="text-xs text-amber-400/90 mt-2 font-medium animate-pulse">📷 Caméra active : Scannez chaque étiquette une par une</p>
+                            <div id="inventory-reader" class="w-full max-w-sm rounded-xl overflow-hidden border border-blue-900/60 bg-slate-950 min-h-[220px]"></div>
+                            <p class="text-xs text-[#FFC62D] mt-2 font-medium animate-pulse">📷 Caméra active : Scannez chaque étiquette une par une</p>
                         </div>
-                        <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-xl flex flex-col justify-between space-y-4">
+                        <div class="bg-[#0A1836] border border-blue-900/60 p-5 rounded-xl flex flex-col justify-between space-y-4">
                             <div>
-                                <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Pièces scannées en direct :</h4>
-                                <div class="text-3xl font-bold text-amber-400" id="inv-scanned-count">0</div>
-                                <p class="text-xs text-slate-400 mt-2">Dernier code scanné : <span id="inv-last-code" class="font-mono text-white">-</span></p>
+                                <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Pièces scannées en direct :</h4>
+                                <div class="text-3xl font-bold text-[#FFC62D]" id="inv-scanned-count">0</div>
+                                <p class="text-xs text-slate-300 mt-2">Dernier code scanné : <span id="inv-last-code" class="font-mono text-white">-</span></p>
                             </div>
-                            <div class="max-h-32 overflow-y-auto bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-xs text-slate-300" id="inv-scanned-list">
+                            <div class="max-h-32 overflow-y-auto bg-slate-950 p-3 rounded-lg border border-blue-950 font-mono text-xs text-slate-300" id="inv-scanned-list">
                                 <!-- Liste des codes scannés -->
                             </div>
                         </div>
                     </div>
 
                     <!-- Résultat comparatif -->
-                    <div id="inv-results-box" class="hidden space-y-4 pt-4 border-t border-slate-800">
+                    <div id="inv-results-box" class="hidden space-y-4 pt-4 border-t border-blue-900/60">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                            <h4 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-scale-balanced text-blue-400"></i> Résultats du comparatif & Valorisation financière</h4>
+                            <h4 class="font-bold text-base flex items-center gap-2 text-white"><i class="fa-solid fa-scale-balanced text-[#FFC62D]"></i> Résultats du comparatif & Valorisation financière</h4>
                             <div class="text-sm font-bold text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-3 py-1.5 rounded-xl">
                                 Valeur Totale Physique : <span id="inv-total-value">0 €</span>
                             </div>
                         </div>
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                        <div class="bg-[#0A1836] border border-blue-900/60 rounded-xl overflow-hidden">
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left border-collapse">
                                     <thead>
-                                        <tr class="border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase bg-slate-800/50">
+                                        <tr class="border-b border-blue-900/60 text-xs font-semibold text-slate-300 uppercase bg-[#0E234F]/80">
                                             <th class="p-3">Eurocode</th>
                                             <th class="p-3">Véhicule</th>
                                             <th class="p-3 text-center">P. Achat Unit.</th>
@@ -391,7 +392,7 @@
                                             <th class="p-3 text-right">Action corrective</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="inv-results-tbody" class="divide-y divide-slate-800/60 text-sm">
+                                    <tbody id="inv-results-tbody" class="divide-y divide-blue-950 text-sm">
                                         <!-- Rempli dynamiquement -->
                                     </tbody>
                                 </table>
@@ -403,11 +404,11 @@
 
             <!-- TAB 3 : HISTORIQUE -->
             <div id="tab-history" class="hidden space-y-4">
-                <div class="bg-slate-800/40 border border-slate-800 rounded-2xl overflow-hidden">
+                <div class="bg-[#0E234F]/50 border border-blue-900/50 rounded-2xl overflow-hidden shadow-sm">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase bg-slate-800/60">
+                                <tr class="border-b border-blue-900/60 text-xs font-semibold text-slate-300 uppercase bg-[#0E234F]">
                                     <th class="p-4">Date / Heure</th>
                                     <th class="p-4">Centre</th>
                                     <th class="p-4">Mouvement</th>
@@ -415,7 +416,7 @@
                                     <th class="p-4">Détails / Immatriculation</th>
                                 </tr>
                             </thead>
-                            <tbody id="history-table-body" class="divide-y divide-slate-800/60 text-sm">
+                            <tbody id="history-table-body" class="divide-y divide-blue-950 text-sm">
                                 <!-- Rempli par JS -->
                             </tbody>
                         </table>
@@ -427,32 +428,32 @@
     </div>
 
     <!-- MODAL AJOUT / MODIFICATION ARTICLE -->
-    <div id="item-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
-            <h3 id="modal-title" class="text-lg font-bold">Ajouter un Vitrage</h3>
+    <div id="item-modal" class="fixed inset-0 z-50 bg-[#07132B]/85 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-[#0E234F] border border-blue-900/60 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <h3 id="modal-title" class="text-lg font-bold text-white">Ajouter un Vitrage</h3>
             
             <input type="hidden" id="edit-id" value="">
             <input type="hidden" id="edit-original-eurocode" value="">
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="sm:col-span-2">
-                    <label class="text-xs font-medium text-slate-400">Eurocode</label>
+                    <label class="text-xs font-medium text-slate-300">Eurocode</label>
                     <div class="flex gap-2 mt-1">
-                        <input type="text" id="f-eurocode" placeholder="Ex: 8334AGACMVW1P" class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm uppercase font-mono text-blue-400">
-                        <button type="button" onclick="openModalScanner()" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1.5">
+                        <input type="text" id="f-eurocode" placeholder="Ex: 8334AGACMVW1P" class="flex-1 bg-[#091735] border border-blue-900/60 rounded-xl px-3 py-2 text-sm uppercase font-mono text-[#FFC62D]">
+                        <button type="button" onclick="openModalScanner()" class="bg-[#FFC62D]/15 hover:bg-[#FFC62D]/25 text-[#FFC62D] border border-[#FFC62D]/30 px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1.5">
                             <i class="fa-solid fa-camera"></i> Scanner
                         </button>
                     </div>
                 </div>
 
-                <div id="modal-scanner-container" class="sm:col-span-2 hidden bg-slate-950 p-3 rounded-xl border border-slate-700 text-center">
+                <div id="modal-scanner-container" class="sm:col-span-2 hidden bg-slate-950 p-3 rounded-xl border border-blue-900/60 text-center">
                     <div id="modal-reader" class="w-full max-w-xs mx-auto rounded-lg overflow-hidden"></div>
-                    <button type="button" onclick="closeModalScanner()" class="mt-2 text-xs text-red-400 hover:underline">Fermer la caméra</button>
+                    <button type="button" onclick="closeModalScanner()" class="mt-2 text-xs text-amber-400 hover:underline">Fermer la caméra</button>
                 </div>
 
                 <div>
-                    <label class="text-xs font-medium text-slate-400">Type de Pièce</label>
-                    <select id="f-type" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                    <label class="text-xs font-medium text-slate-300">Type de Pièce</label>
+                    <select id="f-type" class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-3 py-2 text-sm text-white">
                         <option value="PARE-BRISE" class="text-slate-900 bg-white">PARE-BRISE</option>
                         <option value="OCCASION" class="text-slate-900 bg-white">OCCASION</option>
                         <option value="ENJOLIVEUR" class="text-slate-900 bg-white">ENJOLIVEUR</option>
@@ -466,56 +467,56 @@
                     </select>
                 </div>
                 <div>
-                    <label class="text-xs font-medium text-slate-400">État du Vitrage</label>
-                    <select id="f-etat" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-medium">
+                    <label class="text-xs font-medium text-slate-300">État du Vitrage</label>
+                    <select id="f-etat" class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-3 py-2 text-sm text-white font-medium">
                         <option value="Neuf" class="text-slate-900 bg-white">Neuf</option>
-                        <option value="Occasion" class="text-emerald-400 bg-slate-900">Occasion (Ligne Verte)</option>
-                        <option value="Impacté / Reprise" class="text-amber-400 bg-slate-900">Impacté / Reprise</option>
+                        <option value="Occasion" class="text-emerald-400 bg-[#091735]">Occasion (Ligne Verte)</option>
+                        <option value="Impacté / Reprise" class="text-[#FFC62D] bg-[#091735]">Impacté / Reprise</option>
                     </select>
                 </div>
                 <div>
-                    <label class="text-xs font-medium text-slate-400">Marque Véhicule</label>
-                    <input type="text" id="f-marque" placeholder="Ex: Volkswagen" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                    <label class="text-xs font-medium text-slate-300">Marque Véhicule</label>
+                    <input type="text" id="f-marque" placeholder="Ex: Volkswagen" class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
-                    <label class="text-xs font-medium text-slate-400">Modèle</label>
-                    <input type="text" id="f-modele" placeholder="Ex: Golf 8" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                    <label class="text-xs font-medium text-slate-300">Modèle</label>
+                    <input type="text" id="f-modele" placeholder="Ex: Golf 8" class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
-                    <label class="text-xs font-medium text-slate-400">Année Véhicule</label>
-                    <input type="text" id="f-annee" placeholder="Ex: 2020-2024" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                    <label class="text-xs font-medium text-slate-300">Année Véhicule</label>
+                    <input type="text" id="f-annee" placeholder="Ex: 2020-2024" class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
-                    <label class="text-xs font-medium text-slate-400">Options / ADAS</label>
-                    <input type="text" id="f-options" placeholder="Caméra, HUD, Chauffant..." class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                    <label class="text-xs font-medium text-slate-300">Options / ADAS</label>
+                    <input type="text" id="f-options" placeholder="Caméra, HUD, Chauffant..." class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
-                    <label class="text-xs font-medium text-slate-400">Emplacement (Rack)</label>
-                    <input type="text" id="f-emplacement" placeholder="Rack A-01" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                    <label class="text-xs font-medium text-slate-300">Emplacement (Rack)</label>
+                    <input type="text" id="f-emplacement" placeholder="Rack A-01" class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
-                    <label class="text-xs font-medium text-slate-400">Prix d'achat unitaire (€)</label>
-                    <input type="text" inputmode="decimal" id="f-prix" value="0" placeholder="Ex: 85.50" class="w-full mt-1 bg-slate-800 border border-emerald-500/40 rounded-xl px-3 py-2 text-sm text-emerald-400 font-semibold focus:outline-none focus:border-emerald-500">
+                    <label class="text-xs font-medium text-slate-300">Prix d'achat unitaire (€)</label>
+                    <input type="text" inputmode="decimal" id="f-prix" value="0" placeholder="Ex: 85.50" class="w-full mt-1 bg-[#091735] border border-emerald-500/40 rounded-xl px-3 py-2 text-sm text-emerald-400 font-semibold focus:outline-none focus:border-emerald-500">
                 </div>
                 <div>
-                    <label class="text-xs font-medium text-slate-400">Quantité Initiale</label>
-                    <input type="number" id="f-qte" value="1" min="0" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                    <label class="text-xs font-medium text-slate-300">Quantité Initiale</label>
+                    <input type="number" id="f-qte" value="1" min="0" class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div class="sm:col-span-2">
-                    <label class="text-xs font-medium text-amber-400 font-bold">Seuil Alerte Min Spécifique</label>
-                    <input type="number" id="f-seuil" value="0" min="0" placeholder="Ex: 1" class="w-full mt-1 bg-slate-800 border border-amber-500/40 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+                    <label class="text-xs font-medium text-[#FFC62D] font-bold">Seuil Alerte Min Spécifique</label>
+                    <input type="number" id="f-seuil" value="0" min="0" placeholder="Ex: 1" class="w-full mt-1 bg-[#091735] border border-[#FFC62D]/40 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FFC62D]">
                     <p class="text-[10px] text-slate-400 mt-1">Alerte stock faible si ≤ à cette valeur.</p>
                 </div>
             </div>
             
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-slate-800">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-blue-900/60">
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" id="f-saisie-multiple" class="w-4 h-4 bg-slate-900 border-slate-700 rounded text-blue-500 focus:ring-blue-500 cursor-pointer">
-                    <label for="f-saisie-multiple" class="text-xs font-medium text-slate-400 cursor-pointer select-none" title="Garde la fenêtre ouverte pour enchaîner les ajouts. Pratique pour ajouter plusieurs vitrages sur un même véhicule.">Saisie multiple continue</label>
+                    <input type="checkbox" id="f-saisie-multiple" class="w-4 h-4 bg-[#091735] border-blue-900 rounded text-[#0066BA] focus:ring-[#0066BA] cursor-pointer">
+                    <label for="f-saisie-multiple" class="text-xs font-medium text-slate-300 cursor-pointer select-none" title="Garde la fenêtre ouverte pour enchaîner les ajouts.">Saisie multiple continue</label>
                 </div>
                 <div class="flex justify-end gap-3 w-full sm:w-auto">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Fermer</button>
-                    <button type="button" id="btn-save-item" onclick="saveItem()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-[#0A1836] hover:bg-blue-950 rounded-xl text-sm font-medium transition text-slate-200 border border-blue-900/60">Fermer</button>
+                    <button type="button" id="btn-save-item" onclick="saveItem()" class="px-4 py-2 bg-[#0066BA] hover:bg-[#005294] text-white rounded-xl text-sm font-medium transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 border border-blue-400/30">
                         Enregistrer
                     </button>
                 </div>
@@ -525,125 +526,125 @@
     </div>
 
     <!-- MODAL GESTION DES CENTRES -->
-    <div id="centers-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-6 shadow-2xl">
+    <div id="centers-modal" class="fixed inset-0 z-50 bg-[#07132B]/85 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-[#0E234F] border border-blue-900/60 rounded-2xl max-w-md w-full p-6 space-y-6 shadow-2xl">
             <div class="flex justify-between items-center">
-                <h3 class="text-lg font-bold"><i class="fa-solid fa-location-dot text-blue-400"></i> Gestion des Centres</h3>
-                <button onclick="closeCentersModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-location-dot text-[#FFC62D]"></i> Gestion des Centres</h3>
+                <button onclick="closeCentersModal()" class="text-slate-300 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
-            <div class="space-y-3 bg-slate-800/40 p-4 rounded-xl border border-slate-800">
-                <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Ajouter un nouveau centre</h4>
+            <div class="space-y-3 bg-[#0A1836] p-4 rounded-xl border border-blue-900/60">
+                <h4 class="text-xs font-semibold text-slate-200 uppercase tracking-wider">Ajouter un nouveau centre</h4>
                 <div class="flex gap-2">
-                    <input type="text" id="new-center-name" placeholder="Nom du centre..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500 text-white">
-                    <button onclick="addNewCenter()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl text-sm font-medium transition">Ajouter</button>
+                    <input type="text" id="new-center-name" placeholder="Nom du centre..." class="flex-1 bg-[#091735] border border-blue-900/60 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#FFC62D] text-white">
+                    <button onclick="addNewCenter()" class="bg-[#0066BA] hover:bg-[#005294] text-white px-4 py-2 rounded-xl text-sm font-medium transition border border-blue-400/30">Ajouter</button>
                 </div>
             </div>
 
             <div class="space-y-3">
-                <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Centres existants</h4>
+                <h4 class="text-xs font-semibold text-slate-200 uppercase tracking-wider">Centres existants</h4>
                 <div id="centers-list-container" class="space-y-2 max-h-48 overflow-y-auto">
                     <!-- Rempli dynamiquement -->
                 </div>
             </div>
 
-            <div class="flex justify-end pt-2 border-t border-slate-800">
-                <button onclick="closeCentersModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Fermer</button>
+            <div class="flex justify-end pt-2 border-t border-blue-900/60">
+                <button onclick="closeCentersModal()" class="px-4 py-2 bg-[#0A1836] hover:bg-blue-950 rounded-xl text-sm font-medium transition text-slate-200 border border-blue-900/60">Fermer</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL GESTION DES ACCRÉDITATIONS UTILISATEURS -->
-    <div id="users-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full p-6 space-y-6 shadow-2xl">
+    <div id="users-modal" class="fixed inset-0 z-50 bg-[#07132B]/85 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-[#0E234F] border border-blue-900/60 rounded-2xl max-w-3xl w-full p-6 space-y-6 shadow-2xl">
             <div class="flex justify-between items-center">
-                <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-users-gear text-purple-400"></i> Gestion des Accréditations & Utilisateurs</h3>
-                <button onclick="closeUsersModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <h3 class="text-lg font-bold flex items-center gap-2 text-white"><i class="fa-solid fa-users-gear text-purple-400"></i> Gestion des Accréditations & Utilisateurs</h3>
+                <button onclick="closeUsersModal()" class="text-slate-300 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <p class="text-xs text-slate-400">Gérez les rôles de vos collaborateurs ou supprimez les comptes obsolètes.</p>
+            <p class="text-xs text-slate-300">Gérez les rôles de vos collaborateurs ou supprimez les comptes obsolètes.</p>
             
-            <div class="bg-slate-800/40 border border-slate-800 rounded-xl overflow-hidden max-h-96 overflow-y-auto">
+            <div class="bg-[#0A1836] border border-blue-900/60 rounded-xl overflow-hidden max-h-96 overflow-y-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase bg-slate-800/60">
+                        <tr class="border-b border-blue-900/60 text-xs font-semibold text-slate-300 uppercase bg-[#0E234F]">
                             <th class="p-3">E-mail</th>
                             <th class="p-3">Rôle actuel</th>
                             <th class="p-3">Centre rattaché</th>
                             <th class="p-3 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="users-table-tbody" class="divide-y divide-slate-800/60 text-sm">
+                    <tbody id="users-table-tbody" class="divide-y divide-blue-950 text-sm">
                         <!-- Rempli dynamiquement -->
                     </tbody>
                 </table>
             </div>
 
-            <div class="flex justify-end pt-2 border-t border-slate-800">
-                <button onclick="closeUsersModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Fermer</button>
+            <div class="flex justify-end pt-2 border-t border-blue-900/60">
+                <button onclick="closeUsersModal()" class="px-4 py-2 bg-[#0A1836] hover:bg-blue-950 rounded-xl text-sm font-medium transition text-slate-200 border border-blue-900/60">Fermer</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL SIGNALEMENT DE PROBLÈME (POUR LES CENTRES) -->
-    <div id="report-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Signaler un problème / bug</h3>
-            <p class="text-xs text-slate-400">Envoyez une description du problème rencontré directement au compte maître.</p>
+    <div id="report-modal" class="fixed inset-0 z-50 bg-[#07132B]/85 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-[#0E234F] border border-blue-900/60 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <h3 class="text-lg font-bold flex items-center gap-2 text-white"><i class="fa-solid fa-triangle-exclamation text-[#FFC62D]"></i> Signaler un problème / bug</h3>
+            <p class="text-xs text-slate-300">Envoyez une description du problème rencontré directement au compte maître.</p>
             <div>
-                <label class="text-xs font-medium text-slate-400">Message / Description</label>
-                <textarea id="report-message-input" rows="4" placeholder="Décrivez le souci ou la demande..." class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-500 text-white"></textarea>
+                <label class="text-xs font-medium text-slate-300">Message / Description</label>
+                <textarea id="report-message-input" rows="4" placeholder="Décrivez le souci ou la demande..." class="w-full mt-1 bg-[#091735] border border-blue-900/60 rounded-xl p-3 text-sm focus:outline-none focus:border-[#FFC62D] text-white"></textarea>
             </div>
-            <div class="flex justify-end gap-3 pt-2 border-t border-slate-800">
-                <button type="button" onclick="closeReportModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Annuler</button>
-                <button type="button" onclick="submitReport()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-sm font-medium transition shadow-lg shadow-amber-600/20">Envoyer le signalement</button>
+            <div class="flex justify-end gap-3 pt-2 border-t border-blue-900/60">
+                <button type="button" onclick="closeReportModal()" class="px-4 py-2 bg-[#0A1836] hover:bg-blue-950 rounded-xl text-sm font-medium transition text-slate-200 border border-blue-900/60">Annuler</button>
+                <button type="button" onclick="submitReport()" class="px-4 py-2 bg-[#FFC62D] hover:bg-[#e6b122] text-slate-950 font-bold rounded-xl text-sm transition shadow-lg shadow-amber-500/25">Envoyer le signalement</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL SUPPORT & PROBLÈMES (RÉSERVÉ AU MAÎTRE) -->
-    <div id="support-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full p-6 space-y-6 shadow-2xl">
+    <div id="support-modal" class="fixed inset-0 z-50 bg-[#07132B]/85 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-[#0E234F] border border-blue-900/60 rounded-2xl max-w-3xl w-full p-6 space-y-6 shadow-2xl">
             <div class="flex justify-between items-center">
-                <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Signalements & Problèmes Ateliers</h3>
-                <button onclick="closeSupportModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <h3 class="text-lg font-bold flex items-center gap-2 text-white"><i class="fa-solid fa-triangle-exclamation text-[#FFC62D]"></i> Signalements & Problèmes Ateliers</h3>
+                <button onclick="closeSupportModal()" class="text-slate-300 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <p class="text-xs text-slate-400">Retrouvez ici les éventuels problèmes ou demandes remontés par les centres.</p>
+            <p class="text-xs text-slate-300">Retrouvez ici les éventuels problèmes ou demandes remontés par les centres.</p>
             
-            <div class="bg-slate-800/40 border border-slate-800 rounded-xl overflow-hidden max-h-96 overflow-y-auto">
+            <div class="bg-[#0A1836] border border-blue-900/60 rounded-xl overflow-hidden max-h-96 overflow-y-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase bg-slate-800/60">
+                        <tr class="border-b border-blue-900/60 text-xs font-semibold text-slate-300 uppercase bg-[#0E234F]">
                             <th class="p-3">Date</th>
                             <th class="p-3">Centre / Auteur</th>
                             <th class="p-3">Message</th>
                             <th class="p-3 text-right">Action</th>
                         </tr>
                     </thead>
-                    <tbody id="support-table-tbody" class="divide-y divide-slate-800/60 text-sm">
+                    <tbody id="support-table-tbody" class="divide-y divide-blue-950 text-sm">
                         <!-- Rempli dynamiquement -->
                     </tbody>
                 </table>
             </div>
 
-            <div class="flex justify-end pt-2 border-t border-slate-800">
-                <button onclick="closeSupportModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Fermer</button>
+            <div class="flex justify-end pt-2 border-t border-blue-900/60">
+                <button onclick="closeSupportModal()" class="px-4 py-2 bg-[#0A1836] hover:bg-blue-950 rounded-xl text-sm font-medium transition text-slate-200 border border-blue-900/60">Fermer</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL QR CODE INDIVIDUEL -->
-    <div id="qr-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
-            <h3 class="font-bold text-base text-center" id="qr-modal-title">Étiquette de Stock</h3>
+    <div id="qr-modal" class="fixed inset-0 z-50 bg-[#07132B]/85 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-[#0E234F] border border-blue-900/60 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+            <h3 class="font-bold text-base text-center text-white" id="qr-modal-title">Étiquette de Stock</h3>
             
             <!-- Zone d'impression d'étiquette individuelle -->
             <div id="qr-printable-area" class="bg-white text-slate-900 p-4 rounded-xl border border-slate-200 text-left space-y-3">
                 <div class="flex justify-between items-start border-b border-slate-200 pb-2">
                     <div>
                         <p class="text-[10px] text-slate-500 uppercase font-semibold">Eurocode</p>
-                        <p id="qr-modal-eurocode" class="font-mono font-bold text-base text-blue-600 break-all"></p>
+                        <p id="qr-modal-eurocode" class="font-mono font-bold text-base text-blue-700 break-all"></p>
                     </div>
-                    <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider">GlassStock</span>
+                    <span class="text-[10px] bg-[#FFC62D] text-slate-950 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Mondial Pare-Brise</span>
                 </div>
                 <div class="flex justify-center my-2">
                     <div id="qrcode-container" class="p-1 border border-slate-100 rounded"></div>
@@ -662,37 +663,37 @@
 
             <!-- Boutons d'action -->
             <div class="flex gap-2 pt-2">
-                <button onclick="printQrCode()" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20">
+                <button onclick="printQrCode()" class="flex-1 py-2.5 bg-[#0066BA] hover:bg-[#005294] text-white rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 border border-blue-400/30">
                     <i class="fa-solid fa-print"></i> Imprimer
                 </button>
-                <button onclick="closeQrModal()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Fermer</button>
+                <button onclick="closeQrModal()" class="px-4 py-2.5 bg-[#0A1836] hover:bg-blue-950 rounded-xl text-sm font-medium transition text-slate-200 border border-blue-900/60">Fermer</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL PLANCHE D'ÉTIQUETTES (IMPRESSION GROUPÉE) -->
-    <div id="batch-qr-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-5xl w-full p-6 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <h3 class="font-bold text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-print text-amber-400"></i> Planche d'Étiquettes (<span id="batch-count">0</span> pièces)
+    <div id="batch-qr-modal" class="fixed inset-0 z-50 bg-[#07132B]/85 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-[#0E234F] border border-blue-900/60 rounded-2xl max-w-5xl w-full p-6 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-blue-900/60 pb-3">
+                <h3 class="font-bold text-lg flex items-center gap-2 text-white">
+                    <i class="fa-solid fa-print text-[#FFC62D]"></i> Planche d'Étiquettes (<span id="batch-count">0</span> pièces)
                 </h3>
-                <button onclick="closeBatchQrModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeBatchQrModal()" class="text-slate-300 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
-            <p class="text-xs text-slate-400">
+            <p class="text-xs text-slate-300">
                 Aperçu de la planche d'étiquettes optimisée pour l'impression A4 (3 étiquettes par ligne).
             </p>
 
-            <div class="flex-1 overflow-y-auto bg-slate-950 p-4 rounded-xl border border-slate-800">
+            <div class="flex-1 overflow-y-auto bg-slate-950 p-4 rounded-xl border border-blue-900/60">
                 <div id="batch-printable-area" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     <!-- Rempli dynamiquement -->
                 </div>
             </div>
 
-            <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
-                <button onclick="closeBatchQrModal()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Annuler</button>
-                <button onclick="triggerBatchPrint()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl text-sm transition flex items-center gap-2 shadow-lg shadow-emerald-600/20">
+            <div class="flex justify-end gap-3 pt-3 border-t border-blue-900/60">
+                <button onclick="closeBatchQrModal()" class="px-4 py-2.5 bg-[#0A1836] hover:bg-blue-950 rounded-xl text-sm font-medium transition text-slate-200 border border-blue-900/60">Annuler</button>
+                <button onclick="triggerBatchPrint()" class="px-5 py-2.5 bg-[#FFC62D] hover:bg-[#e6b122] text-slate-950 font-bold rounded-xl text-sm transition flex items-center gap-2 shadow-lg shadow-amber-500/25">
                     <i class="fa-solid fa-print"></i> Lancer l'impression
                 </button>
             </div>
@@ -807,7 +808,7 @@
 
             if (currentUserDoc.email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase()) {
                 roleBadge.innerText = "Compte Maître (Accès Total)";
-                roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-[#FFC62D]/15 text-[#FFC62D] border border-[#FFC62D]/30";
                 btnCenters.classList.remove('hidden');
                 btnGenCode.classList.remove('hidden');
                 btnUsers.classList.remove('hidden');
@@ -815,14 +816,14 @@
                 updateSupportBadgeCount();
             } else if (currentUserDoc.role === 'admin') {
                 roleBadge.innerText = "Admin / Associé (Accès Total)";
-                roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20";
+                roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20";
                 btnCenters.classList.remove('hidden');
                 btnGenCode.classList.remove('hidden');
                 btnUsers.classList.add('hidden');
                 if (btnSupport) btnSupport.classList.add('hidden');
             } else {
                 roleBadge.innerText = `Centre Rattaché : ${currentUserDoc.assignedCenter}`;
-                roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20";
+                roleBadge.className = "text-xs px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/20";
                 btnCenters.classList.add('hidden');
                 btnUsers.classList.add('hidden');
                 btnGenCode.classList.add('hidden');
@@ -858,11 +859,11 @@
             if (btnScanExec) {
                 if (isEditable) {
                     btnScanExec.disabled = false;
-                    btnScanExec.className = "w-full mt-6 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl transition shadow-lg shadow-emerald-600/20";
+                    btnScanExec.className = "w-full mt-6 bg-[#0066BA] hover:bg-[#005294] text-white font-medium py-3 rounded-xl transition shadow-lg shadow-blue-600/30 border border-blue-400/30";
                     btnScanExec.innerText = "Valider l'Action Stock";
                 } else {
                     btnScanExec.disabled = true;
-                    btnScanExec.className = "w-full mt-6 bg-slate-800 text-slate-500 font-medium py-3 rounded-xl border border-slate-700 cursor-not-allowed";
+                    btnScanExec.className = "w-full mt-6 bg-[#0A1836] text-slate-500 font-medium py-3 rounded-xl border border-blue-900/60 cursor-not-allowed";
                     btnScanExec.innerText = "Action réservée à l'agence " + currentCenter;
                 }
             }
@@ -1034,7 +1035,7 @@
 
             const dot = document.getElementById('sync-dot');
             dot.className = "w-2 h-2 rounded-full bg-blue-400 inline-block animate-ping";
-            setTimeout(() => { dot.className = "w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"; }, 1000);
+            setTimeout(() => { dot.className = "w-2 h-2 rounded-full bg-[#FFC62D] inline-block animate-pulse"; }, 1000);
         }
 
         window.renderCenterSelector = function() {
@@ -1079,12 +1080,12 @@
                 const tabEl = document.getElementById(`tab-${t}`);
                 if (tabEl) tabEl.classList.add('hidden');
                 const btn = document.getElementById(`tab-btn-${t}`);
-                if(btn) btn.className = "pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap";
+                if(btn) btn.className = "pb-3 border-b-2 border-transparent text-slate-300 hover:text-white flex items-center gap-2 transition whitespace-nowrap";
             });
             const activeTabEl = document.getElementById(`tab-${tab}`);
             if (activeTabEl) activeTabEl.classList.remove('hidden');
             const activeBtn = document.getElementById(`tab-btn-${tab}`);
-            if(activeBtn) activeBtn.className = "pb-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition whitespace-nowrap";
+            if(activeBtn) activeBtn.className = "pb-3 border-b-2 border-[#FFC62D] text-[#FFC62D] flex items-center gap-2 transition whitespace-nowrap";
             
             if (tab === 'catalog') {
                 renderCategoryTabs();
@@ -1239,27 +1240,27 @@
                 let actionBtn = "";
 
                 if (diff < 0) {
-                    badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20">Écart : ${diff}</span>`;
+                    badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-500/15 text-red-400 border border-red-500/30">Écart : ${diff}</span>`;
                     actionBtn = isEditable 
-                        ? `<button onclick="correctInventoryStock('${code}', ${phys})" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">Mettre à ${phys}</button>`
+                        ? `<button onclick="correctInventoryStock('${code}', ${phys})" class="bg-[#0066BA] hover:bg-[#005294] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">Mettre à ${phys}</button>`
                         : `<span class="text-xs text-slate-500">Bloqué</span>`;
                 } else if (diff > 0) {
-                    badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Écart : +${diff}</span>`;
+                    badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-[#FFC62D]/15 text-[#FFC62D] border border-[#FFC62D]/30">Écart : +${diff}</span>`;
                     actionBtn = isEditable 
-                        ? `<button onclick="correctInventoryStock('${code}', ${phys})" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">Mettre à ${phys}</button>`
+                        ? `<button onclick="correctInventoryStock('${code}', ${phys})" class="bg-[#0066BA] hover:bg-[#005294] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">Mettre à ${phys}</button>`
                         : `<span class="text-xs text-slate-500">Bloqué</span>`;
                 } else {
-                    badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Conforme</span>`;
+                    badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Conforme</span>`;
                     actionBtn = `<span class="text-xs text-slate-500">Aucun</span>`;
                 }
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-800/40 transition">
-                        <td class="p-3 font-mono font-bold text-blue-400">${code}</td>
+                    <tr class="hover:bg-blue-950/40 transition">
+                        <td class="p-3 font-mono font-bold text-[#FFC62D]">${code}</td>
                         <td class="p-3 text-slate-300 text-xs">${data.item.marque || '-'} ${data.item.modele || '-'}</td>
                         <td class="p-3 text-center font-mono text-emerald-400 font-semibold">${prix.toFixed(2)} €</td>
-                        <td class="p-3 text-center font-bold">${info}</td>
-                        <td class="p-3 text-center font-bold text-amber-400">${phys}</td>
+                        <td class="p-3 text-center font-bold text-white">${info}</td>
+                        <td class="p-3 text-center font-bold text-[#FFC62D]">${phys}</td>
                         <td class="p-3">${badge}</td>
                         <td class="p-3 text-right">${actionBtn}</td>
                     </tr>
@@ -1331,13 +1332,13 @@
 
                 const isActive = currentCategory === cat;
                 const activeClass = isActive 
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30 border-blue-500" 
-                    : "bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700";
+                    ? "bg-[#0066BA] text-white shadow-lg shadow-blue-600/30 border-[#FFC62D]" 
+                    : "bg-[#0E234F] text-slate-300 hover:bg-blue-900/50 border-blue-900/60";
 
                 container.innerHTML += `
                     <button onclick="selectCategory('${cat}')" class="px-3.5 py-2 rounded-xl border font-medium transition whitespace-nowrap flex items-center gap-2 ${activeClass}">
                         <span>${cat}</span>
-                        <span class="px-1.5 py-0.5 rounded-md text-[10px] ${isActive ? 'bg-blue-700 text-white' : 'bg-slate-900 text-slate-400'}">${count}</span>
+                        <span class="px-1.5 py-0.5 rounded-md text-[10px] ${isActive ? 'bg-[#FFC62D] text-slate-950 font-bold' : 'bg-[#091735] text-slate-400'}">${count}</span>
                     </button>
                 `;
             });
@@ -1386,7 +1387,7 @@
                 });
 
                 if (foundResults.length === 0) {
-                    container.innerHTML = `<div class="p-8 text-center text-slate-500 bg-purple-950/10 rounded-2xl border border-purple-500/20">🔍 Aucun résultat pour "${globalQuery}" dans les autres centres (Catégorie : ${currentCategory}).</div>`;
+                    container.innerHTML = `<div class="p-8 text-center text-slate-400 bg-[#0E234F]/40 rounded-2xl border border-blue-900/50">🔍 Aucun résultat pour "${globalQuery}" dans les autres centres (Catégorie : ${currentCategory}).</div>`;
                     return;
                 }
 
@@ -1397,23 +1398,23 @@
                     const isCurrent = centerName.toLowerCase() === currentCenter.toLowerCase();
                     
                     let stockBadgeClass = stockVal === 0 
-                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold' 
-                        : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold';
+                        ? 'bg-[#FFC62D]/15 text-[#FFC62D] border border-[#FFC62D]/30 font-bold' 
+                        : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold';
 
-                    let rowBgClass = isCurrent ? 'bg-blue-950/20 hover:bg-blue-900/30 transition' : 'hover:bg-slate-800/30 transition';
-                    const anneeDisplay = item.annee ? `<span class="text-xs text-blue-300 font-medium ml-1">(${item.annee})</span>` : '';
+                    let rowBgClass = isCurrent ? 'bg-blue-950/40 hover:bg-blue-900/30 transition' : 'hover:bg-blue-950/20 transition';
+                    const anneeDisplay = item.annee ? `<span class="text-xs text-[#FFC62D] font-medium ml-1">(${item.annee})</span>` : '';
                     const centerBadge = isCurrent 
-                        ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500 text-white">Votre Centre (${centerName})</span>` 
-                        : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">Centre : ${centerName}</span>`;
+                        ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#0066BA] text-white">Votre Centre (${centerName})</span>` 
+                        : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FFC62D]/2nd text-[#FFC62D] border border-[#FFC62D]/30">Centre : ${centerName}</span>`;
 
                     rowsHtml += `
                         <tr class="${rowBgClass}">
                             <td class="p-4">
-                                <div class="font-mono font-bold text-blue-400">${item.eurocode}</div>
+                                <div class="font-mono font-bold text-[#FFC62D]">${item.eurocode}</div>
                                 <div class="mt-1">${centerBadge}</div>
                             </td>
                             <td class="p-4">
-                                <div class="font-medium text-slate-200">${item.marque} ${item.modele} ${anneeDisplay}</div>
+                                <div class="font-medium text-white">${item.marque} ${item.modele} ${anneeDisplay}</div>
                                 <div class="text-xs text-slate-400">${item.type}</div>
                             </td>
                             <td class="p-4 text-xs text-slate-300 font-medium">${item.options || '-'}</td>
@@ -1425,7 +1426,7 @@
                                 </span>
                             </td>
                             <td class="p-4 text-right">
-                                <button onclick="switchToCenterAndShow('${centerName}', '${item.eurocode}')" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold transition shadow">
+                                <button onclick="switchToCenterAndShow('${centerName}', '${item.eurocode}')" class="px-3 py-1.5 bg-[#0066BA] hover:bg-[#005294] text-white rounded-lg text-xs font-semibold transition shadow border border-blue-400/30">
                                     Voir le centre
                                 </button>
                             </td>
@@ -1434,17 +1435,17 @@
                 });
 
                 container.innerHTML += `
-                    <div class="bg-purple-950/20 border border-purple-500/30 rounded-2xl overflow-hidden shadow-lg">
-                        <div class="bg-purple-900/40 px-6 py-3 border-b border-purple-500/30 flex justify-between items-center">
-                            <h3 class="font-bold text-base text-purple-200 flex items-center gap-2">
-                                <i class="fa-solid fa-globe text-purple-400"></i> Résultats de la recherche globale pour "${globalQuery}"
+                    <div class="bg-[#0E234F]/70 border border-blue-900/60 rounded-2xl overflow-hidden shadow-lg">
+                        <div class="bg-[#091735] px-6 py-3 border-b border-blue-900/60 flex justify-between items-center">
+                            <h3 class="font-bold text-base text-[#FFC62D] flex items-center gap-2">
+                                <i class="fa-solid fa-globe text-[#FFC62D]"></i> Résultats de la recherche globale pour "${globalQuery}"
                             </h3>
-                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-medium">${foundResults.length} correspondance(s) trouvée(s)</span>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-[#FFC62D]/20 text-[#FFC62D] font-medium border border-[#FFC62D]/30">${foundResults.length} correspondance(s) trouvée(s)</span>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="border-b border-slate-800/80 text-xs font-semibold text-slate-400 uppercase bg-slate-900/40">
+                                    <tr class="border-b border-blue-900/60 text-xs font-semibold text-slate-300 uppercase bg-[#0E234F]">
                                         <th class="p-4">Eurocode & Centre</th>
                                         <th class="p-4">Véhicule</th>
                                         <th class="p-4">Options / ADAS</th>
@@ -1454,7 +1455,7 @@
                                         <th class="p-4 text-right">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-slate-800/60 text-sm">
+                                <tbody class="divide-y divide-blue-950 text-sm">
                                     ${rowsHtml}
                                 </tbody>
                             </table>
@@ -1482,7 +1483,7 @@
             });
             
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="p-8 text-center text-slate-500 bg-slate-800/40 rounded-2xl border border-slate-800">Aucune pièce de type "${currentCategory}" trouvée pour le centre ${currentCenter}.</div>`;
+                container.innerHTML = `<div class="p-8 text-center text-slate-400 bg-[#0E234F]/40 rounded-2xl border border-blue-900/50">Aucune pièce de type "${currentCategory}" trouvée pour le centre ${currentCenter}.</div>`;
                 return;
             }
 
@@ -1504,10 +1505,10 @@
                     const prixVal = parseNum(item.prix, 0);
                     
                     let stockBadgeClass = stockVal === 0 
-                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold' 
-                        : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold';
+                        ? 'bg-[#FFC62D]/15 text-[#FFC62D] border border-[#FFC62D]/30 font-bold' 
+                        : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold';
 
-                    let rowBgClass = 'hover:bg-slate-800/30 transition';
+                    let rowBgClass = 'hover:bg-blue-950/30 transition';
                     let etatBadgeHtml = '';
 
                     const etat = item.etat || 'Neuf';
@@ -1515,33 +1516,33 @@
                         rowBgClass = 'bg-emerald-950/20 hover:bg-emerald-900/30 transition border-l-4 border-emerald-500';
                         etatBadgeHtml = `<span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Occasion</span>`;
                     } else if (etat === 'Impacté / Reprise') {
-                        rowBgClass = 'bg-amber-950/20 hover:bg-amber-900/30 transition border-l-4 border-amber-500';
-                        etatBadgeHtml = `<span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">Impacté / Reprise</span>`;
+                        rowBgClass = 'bg-[#FFC62D]/10 hover:bg-[#FFC62D]/20 transition border-l-4 border-[#FFC62D]';
+                        etatBadgeHtml = `<span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-[#FFC62D]/20 text-[#FFC62D] border border-[#FFC62D]/40">Impacté / Reprise</span>`;
                     } else {
-                        etatBadgeHtml = `<span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-400">Neuf</span>`;
+                        etatBadgeHtml = `<span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-[#091735] text-slate-300">Neuf</span>`;
                     }
 
-                    const anneeDisplay = item.annee ? `<span class="text-xs text-blue-300 font-medium ml-1">(${item.annee})</span>` : '';
+                    const anneeDisplay = item.annee ? `<span class="text-xs text-[#FFC62D] font-medium ml-1">(${item.annee})</span>` : '';
 
                     const safeId = (item.id !== undefined && item.id !== null) ? String(item.id).replace(/'/g, "\\'") : '';
                     const safeEurocode = (item.eurocode || '').toString().replace(/'/g, "\\'");
 
                     let actionButtons = `
-                        <button onclick="showQr('${safeEurocode}')" title="Étiquette QR" class="text-slate-400 hover:text-white px-2.5 py-1.5 bg-slate-800 rounded-lg"><i class="fa-solid fa-qrcode"></i></button>
+                        <button onclick="showQr('${safeEurocode}')" title="Étiquette QR" class="text-slate-300 hover:text-white px-2.5 py-1.5 bg-[#091735] border border-blue-900/60 rounded-lg"><i class="fa-solid fa-qrcode"></i></button>
                     `;
                     if (isEditable) {
                         actionButtons += `
-                            <button onclick="openModal('${safeId}', '${safeEurocode}')" title="Modifier" class="text-slate-400 hover:text-blue-400 px-2.5 py-1.5 bg-slate-800 rounded-lg"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteItem('${safeId}', '${safeEurocode}')" title="Supprimer" class="text-slate-400 hover:text-red-400 px-2.5 py-1.5 bg-slate-800 rounded-lg"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="openModal('${safeId}', '${safeEurocode}')" title="Modifier" class="text-slate-300 hover:text-[#FFC62D] px-2.5 py-1.5 bg-[#091735] border border-blue-900/60 rounded-lg"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteItem('${safeId}', '${safeEurocode}')" title="Supprimer" class="text-slate-300 hover:text-red-400 px-2.5 py-1.5 bg-[#091735] border border-blue-900/60 rounded-lg"><i class="fa-solid fa-trash"></i></button>
                         `;
                     }
 
                     rowsHtml += `
                         <tr class="${rowBgClass}">
-                            <td class="p-4 font-mono font-bold text-blue-400">${item.eurocode}</td>
+                            <td class="p-4 font-mono font-bold text-[#FFC62D]">${item.eurocode}</td>
                             <td class="p-4">
-                                <div class="font-medium text-slate-200">${item.marque} ${item.modele} ${anneeDisplay}</div>
-                                <div class="text-xs text-slate-400">${item.type} • ${etatBadgeHtml}</div>
+                                <div class="font-medium text-white">${item.marque} ${item.modele} ${anneeDisplay}</div>
+                                <div class="text-xs text-slate-300">${item.type} • ${etatBadgeHtml}</div>
                             </td>
                             <td class="p-4 text-xs text-slate-300 font-medium">${item.options || '-'}</td>
                             <td class="p-4 font-mono text-emerald-400 font-semibold">${prixVal.toFixed(2)} €</td>
@@ -1559,17 +1560,17 @@
                 });
 
                 container.innerHTML += `
-                    <div class="bg-slate-800/40 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
-                        <div class="bg-slate-800/80 px-6 py-3 border-b border-slate-700/60 flex justify-between items-center">
+                    <div class="bg-[#0E234F]/70 border border-blue-900/60 rounded-2xl overflow-hidden shadow-lg">
+                        <div class="bg-[#091735] px-6 py-3 border-b border-blue-900/60 flex justify-between items-center">
                             <h3 class="font-bold text-base text-white flex items-center gap-2">
-                                <i class="fa-solid fa-car text-blue-400"></i> ${brand}
+                                <i class="fa-solid fa-car text-[#FFC62D]"></i> ${brand}
                             </h3>
-                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-700 text-slate-300 font-medium">${brandItems.length} référence(s)</span>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-[#0E234F] text-[#FFC62D] border border-blue-900/60 font-medium">${brandItems.length} référence(s)</span>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="border-b border-slate-800/80 text-xs font-semibold text-slate-400 uppercase bg-slate-900/40">
+                                    <tr class="border-b border-blue-900/60 text-xs font-semibold text-slate-300 uppercase bg-[#0E234F]">
                                         <th class="p-4">Eurocode</th>
                                         <th class="p-4">Véhicule & État</th>
                                         <th class="p-4">Options / ADAS</th>
@@ -1579,7 +1580,7 @@
                                         <th class="p-4 text-right">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-slate-800/60 text-sm">
+                                <tbody class="divide-y divide-blue-950 text-sm">
                                     ${rowsHtml}
                                 </tbody>
                             </table>
@@ -1771,15 +1772,13 @@
                 const btn = document.getElementById('btn-save-item');
                 const origText = btn.innerHTML;
                 btn.innerHTML = '<i class="fa-solid fa-check"></i> Ajouté !';
-                btn.classList.replace('bg-blue-600', 'bg-emerald-600');
-                btn.classList.replace('hover:bg-blue-500', 'hover:bg-emerald-500');
-                btn.classList.replace('shadow-blue-600/20', 'shadow-emerald-600/20');
+                btn.classList.replace('bg-[#0066BA]', 'bg-emerald-600');
+                btn.classList.replace('hover:bg-[#005294]', 'hover:bg-emerald-500');
                 
                 setTimeout(() => {
                     btn.innerHTML = origText;
-                    btn.classList.replace('bg-emerald-600', 'bg-blue-600');
-                    btn.classList.replace('hover:bg-emerald-500', 'hover:bg-blue-500');
-                    btn.classList.replace('shadow-emerald-600/20', 'shadow-blue-600/20');
+                    btn.classList.replace('bg-emerald-600', 'bg-[#0066BA]');
+                    btn.classList.replace('hover:bg-emerald-500', 'hover:bg-[#005294]');
                 }, 1500);
 
                 document.getElementById('f-eurocode').focus();
@@ -1829,11 +1828,11 @@
             const centers = getSortedCenters(stockData);
             centers.forEach(center => {
                 container.innerHTML += `
-                    <div class="flex items-center justify-between bg-slate-800 p-2.5 rounded-xl border border-slate-700">
+                    <div class="flex items-center justify-between bg-[#0A1836] p-2.5 rounded-xl border border-blue-950">
                         <span class="text-sm font-medium text-white">${center}</span>
                         <div class="space-x-1">
-                            <button onclick="renameCenter('${center}')" title="Renommer" class="text-slate-400 hover:text-blue-400 px-2 py-1 bg-slate-700 rounded-lg text-xs"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteCenter('${center}')" title="Supprimer" class="text-slate-400 hover:text-red-400 px-2 py-1 bg-slate-700 rounded-lg text-xs"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="renameCenter('${center}')" title="Renommer" class="text-slate-300 hover:text-[#FFC62D] px-2 py-1 bg-[#0E234F] rounded-lg text-xs"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteCenter('${center}')" title="Supprimer" class="text-slate-300 hover:text-red-400 px-2 py-1 bg-[#0E234F] rounded-lg text-xs"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                 `;
@@ -1902,16 +1901,16 @@
                     const isMasterOwner = uData.email && uData.email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase();
 
                     tbody.innerHTML += `
-                        <tr class="hover:bg-slate-800/40 transition">
+                        <tr class="hover:bg-blue-950/40 transition">
                             <td class="p-3 font-medium text-white">${uData.email}</td>
                             <td class="p-3">
-                                <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${isAdmin ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}">
+                                <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${isAdmin ? 'bg-purple-500/15 text-purple-300 border border-purple-500/30' : 'bg-blue-500/15 text-blue-300 border border-blue-500/30'}">
                                     ${isAdmin ? 'Admin / Associé' : 'Atelier'}
                                 </span>
                             </td>
                             <td class="p-3 text-slate-300 text-xs">${uData.assignedCenter || 'Tous'}</td>
                             <td class="p-3 text-right space-x-1">
-                                <button onclick="toggleUserRole('${uId}', '${uData.role}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-lg text-xs font-medium transition">
+                                <button onclick="toggleUserRole('${uId}', '${uData.role}')" class="bg-[#0E234F] hover:bg-blue-900/50 text-slate-200 border border-blue-950 px-2.5 py-1 rounded-lg text-xs font-medium transition">
                                     ${isAdmin ? 'Rétrograder' : 'Promouvoir'}
                                 </button>
                                 ${!isMasterOwner ? `
@@ -2007,12 +2006,12 @@
 
             issues.forEach((issue, index) => {
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-800/40 transition">
-                        <td class="p-3 text-xs text-slate-400">${issue.date}</td>
+                    <tr class="hover:bg-blue-950/40 transition">
+                        <td class="p-3 text-xs text-slate-300">${issue.date}</td>
                         <td class="p-3 font-medium text-white">${issue.center}</td>
                         <td class="p-3 text-slate-300 text-xs">${issue.details}</td>
                         <td class="p-3 text-right">
-                            <button onclick="resolveIssue(${index})" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-lg text-xs font-medium transition">
+                            <button onclick="resolveIssue(${index})" class="bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-lg text-xs font-medium transition">
                                 Marquer résolu
                             </button>
                         </td>
@@ -2079,16 +2078,16 @@
             tbody.innerHTML = '';
             const normalHistory = historyData.filter(h => h.type !== 'Signalement Problème');
             if(normalHistory.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Aucun mouvement enregistré.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">Aucun mouvement enregistré.</td></tr>`;
                 return;
             }
             normalHistory.forEach(h => {
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-800/30 transition">
-                        <td class="p-4 text-slate-400 text-xs">${h.date}</td>
-                        <td class="p-4 font-medium">${h.center}</td>
-                        <td class="p-4"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${h.type.includes('Sortie') ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'}">${h.type}</span></td>
-                        <td class="p-4 font-mono text-blue-400">${h.eurocode}</td>
+                    <tr class="hover:bg-blue-950/40 transition">
+                        <td class="p-4 text-slate-300 text-xs">${h.date}</td>
+                        <td class="p-4 font-medium text-white">${h.center}</td>
+                        <td class="p-4"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${h.type.includes('Sortie') ? 'bg-red-500/15 text-red-400 border border-red-500/30' : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'}">${h.type}</span></td>
+                        <td class="p-4 font-mono text-[#FFC62D]">${h.eurocode}</td>
                         <td class="p-4 text-slate-300">${h.details}</td>
                     </tr>
                 `;
@@ -2149,7 +2148,7 @@
                             <p class="text-[9px] text-slate-500 uppercase font-bold">Eurocode</p>
                             <p class="font-mono font-bold text-xs text-blue-700 break-all">${item.eurocode}</p>
                         </div>
-                        <span class="text-[8px] bg-slate-100 text-slate-600 px-1 py-0.5 rounded font-bold uppercase">GlassStock</span>
+                        <span class="text-[8px] bg-[#FFC62D] text-slate-950 px-1 py-0.5 rounded font-bold uppercase">Mondial Pare-Brise</span>
                     </div>
                     <div class="flex justify-center my-1">
                         <div id="${qrId}" class="p-0.5 border border-slate-100 rounded"></div>
