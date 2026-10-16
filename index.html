@@ -332,10 +332,6 @@
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <h3 id="modal-title" class="text-lg font-bold">Ajouter un Vitrage</h3>
             
-            <!-- CHAMPS CACHÉS SÉCURISÉS POUR LA MODIFICATION RÉTROCOMPATIBLE -->
-            <input type="hidden" id="edit-id" value="">
-            <input type="hidden" id="edit-original-eurocode" value="">
-            
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="sm:col-span-2">
                     <label class="text-xs font-medium text-slate-400">Eurocode</label>
@@ -355,16 +351,16 @@
                 <div>
                     <label class="text-xs font-medium text-slate-400">Type de Pièce</label>
                     <select id="f-type" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
-                        <option class="text-slate-900 bg-white">PARE-BRISE</option>
-                        <option class="text-slate-900 bg-white">OCCASION</option>
-                        <option class="text-slate-900 bg-white">ENJOLIVEUR</option>
-                        <option class="text-slate-900 bg-white">MONTANT</option>
-                        <option class="text-slate-900 bg-white">LUNETTE</option>
-                        <option class="text-slate-900 bg-white">VITRES LATERALES</option>
-                        <option class="text-slate-900 bg-white">TRACTEUR</option>
-                        <option class="text-slate-900 bg-white">PHARES / FEUX ARRIERES</option>
-                        <option class="text-slate-900 bg-white">RETROVISEURS</option>
-                        <option class="text-slate-900 bg-white">AUTRES</option>
+                        <option value="PARE-BRISE" class="text-slate-900 bg-white">PARE-BRISE</option>
+                        <option value="OCCASION" class="text-slate-900 bg-white">OCCASION</option>
+                        <option value="ENJOLIVEUR" class="text-slate-900 bg-white">ENJOLIVEUR</option>
+                        <option value="MONTANT" class="text-slate-900 bg-white">MONTANT</option>
+                        <option value="LUNETTE" class="text-slate-900 bg-white">LUNETTE</option>
+                        <option value="VITRES LATERALES" class="text-slate-900 bg-white">VITRES LATERALES</option>
+                        <option value="TRACTEUR" class="text-slate-900 bg-white">TRACTEUR</option>
+                        <option value="PHARES / FEUX ARRIERES" class="text-slate-900 bg-white">PHARES / FEUX ARRIERES</option>
+                        <option value="RETROVISEURS" class="text-slate-900 bg-white">RETROVISEURS</option>
+                        <option value="AUTRES" class="text-slate-900 bg-white">AUTRES</option>
                     </select>
                 </div>
                 <div>
@@ -410,8 +406,8 @@
                 </div>
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
-                <button onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Annuler</button>
-                <button onclick="saveItem()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-medium transition">Enregistrer</button>
+                <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-medium transition">Annuler</button>
+                <button type="button" onclick="saveItem()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-medium transition">Enregistrer</button>
             </div>
         </div>
     </div>
@@ -512,6 +508,8 @@
         let historyData = [];
         let currentCenter = "Fréjus";
         let currentCategory = "PARE-BRISE";
+        let currentEditIndex = -1; // MEMOIRE ROBUSTE POUR LA MODIFICATION
+        
         let mainHtml5QrCode = null;
         let modalHtml5QrCode = null;
         let inventoryHtml5QrCode = null;
@@ -1113,7 +1111,7 @@
 
                     const anneeDisplay = item.annee ? `<span class="text-xs text-blue-300 font-medium ml-1">(${item.annee})</span>` : '';
 
-                    const safeId = (item.id || '').toString().replace(/'/g, "\\'");
+                    const safeId = (item.id !== undefined && item.id !== null) ? item.id.toString().replace(/'/g, "\\'") : '';
                     const safeEurocode = (item.eurocode || '').toString().replace(/'/g, "\\'");
 
                     let actionButtons = `
@@ -1203,18 +1201,20 @@
             document.getElementById('item-modal').classList.remove('hidden');
             closeModalScanner();
             
-            document.getElementById('edit-id').value = id;
-            document.getElementById('edit-original-eurocode').value = defaultEurocode;
-
+            currentEditIndex = -1; // Réinitialisation par sécurité
             let item = null;
-            if (id) {
-                item = stockData[currentCenter].find(i => String(i.id) === String(id));
+            const list = stockData[currentCenter] || [];
+
+            // RECHERCHE SÉCURISÉE EN MÉMOIRE
+            if (id !== null && id !== undefined && id !== "") {
+                currentEditIndex = list.findIndex(i => String(i.id) === String(id));
             }
-            if (!item && defaultEurocode) {
-                item = stockData[currentCenter].find(i => String(i.eurocode) === String(defaultEurocode));
+            if (currentEditIndex === -1 && defaultEurocode !== "") {
+                currentEditIndex = list.findIndex(i => String(i.eurocode) === String(defaultEurocode));
             }
 
-            if (item) {
+            if (currentEditIndex !== -1) {
+                item = list[currentEditIndex];
                 document.getElementById('modal-title').innerText = "Modifier la Pièce";
                 document.getElementById('f-eurocode').value = item.eurocode || "";
                 document.getElementById('f-type').value = item.type || currentCategory;
@@ -1279,45 +1279,54 @@
             if (!canEditCurrentCenter()) return alert("Vous n'avez pas le droit de modifier le stock de cette agence.");
 
             closeModalScanner();
-            const idVal = document.getElementById('edit-id').value;
-            const originalEurocode = document.getElementById('edit-original-eurocode').value;
-            const newEurocode = document.getElementById('f-eurocode').value.trim().toUpperCase();
+            const eurocode = document.getElementById('f-eurocode').value.trim().toUpperCase();
+            if (!eurocode) return alert("Veuillez saisir un Eurocode.");
             
-            if (!newEurocode) return alert("Veuillez saisir un Eurocode.");
-            
-            let idx = -1;
-            if (idVal) {
-                idx = stockData[currentCenter].findIndex(i => String(i.id) === String(idVal));
-            }
-            if (idx === -1 && originalEurocode) {
-                idx = stockData[currentCenter].findIndex(i => String(i.eurocode) === String(originalEurocode));
-            }
-
-            const item = {
-                id: idVal ? idVal : (idx !== -1 ? stockData[currentCenter][idx].id : Date.now()),
-                eurocode: newEurocode,
-                type: document.getElementById('f-type').value,
-                etat: document.getElementById('f-etat').value,
-                marque: document.getElementById('f-marque').value.trim() || "Inconnue",
-                modele: document.getElementById('f-modele').value.trim(),
-                annee: document.getElementById('f-annee').value.trim(),
-                options: document.getElementById('f-options').value,
-                emplacement: document.getElementById('f-emplacement').value,
-                prix: parseFloat(document.getElementById('f-prix').value) || 0,
-                stock: parseInt(document.getElementById('f-qte').value) || 0,
-                seuil: parseInt(document.getElementById('f-seuil').value) || 0
-            };
-
             if (!stockData[currentCenter]) stockData[currentCenter] = [];
             
-            if (idx !== -1) {
-                stockData[currentCenter][idx] = Object.assign(stockData[currentCenter][idx], item);
+            const newType = document.getElementById('f-type').value;
+
+            // SAUVEGARDE EN SE BASANT SUR L'INDEX EN MÉMOIRE
+            if (currentEditIndex !== -1) {
+                const oldItem = stockData[currentCenter][currentEditIndex];
+                stockData[currentCenter][currentEditIndex] = {
+                    ...oldItem, // Conserve l'ID original exact
+                    eurocode: eurocode,
+                    type: newType,
+                    etat: document.getElementById('f-etat').value,
+                    marque: document.getElementById('f-marque').value.trim() || "Inconnue",
+                    modele: document.getElementById('f-modele').value.trim(),
+                    annee: document.getElementById('f-annee').value.trim(),
+                    options: document.getElementById('f-options').value,
+                    emplacement: document.getElementById('f-emplacement').value,
+                    prix: parseFloat(document.getElementById('f-prix').value) || 0,
+                    stock: parseInt(document.getElementById('f-qte').value) || 0,
+                    seuil: parseInt(document.getElementById('f-seuil').value) || 0
+                };
             } else {
-                stockData[currentCenter].push(item);
+                const newItem = {
+                    id: Date.now(),
+                    eurocode: eurocode,
+                    type: newType,
+                    etat: document.getElementById('f-etat').value,
+                    marque: document.getElementById('f-marque').value.trim() || "Inconnue",
+                    modele: document.getElementById('f-modele').value.trim(),
+                    annee: document.getElementById('f-annee').value.trim(),
+                    options: document.getElementById('f-options').value,
+                    emplacement: document.getElementById('f-emplacement').value,
+                    prix: parseFloat(document.getElementById('f-prix').value) || 0,
+                    stock: parseInt(document.getElementById('f-qte').value) || 0,
+                    seuil: parseInt(document.getElementById('f-seuil').value) || 0
+                };
+                stockData[currentCenter].push(newItem);
             }
 
             saveData();
             closeModal();
+            
+            // Bascule automatique sur la catégorie de la pièce que l'on vient de sauvegarder/modifier
+            currentCategory = newType; 
+            
             renderCategoryTabs();
             renderCatalog();
         }
@@ -1327,15 +1336,17 @@
 
             if(confirm("Voulez-vous supprimer cette référence ?")) {
                 let idx = -1;
-                if (id) {
-                    idx = stockData[currentCenter].findIndex(i => String(i.id) === String(id));
+                const list = stockData[currentCenter] || [];
+                
+                if (id !== null && id !== undefined && id !== "") {
+                    idx = list.findIndex(i => String(i.id) === String(id));
                 }
                 if (idx === -1 && eurocode) {
-                    idx = stockData[currentCenter].findIndex(i => String(i.eurocode) === String(eurocode));
+                    idx = list.findIndex(i => String(i.eurocode) === String(eurocode));
                 }
                 
                 if (idx !== -1) {
-                    stockData[currentCenter].splice(idx, 1);
+                    list.splice(idx, 1);
                     saveData();
                     renderCategoryTabs();
                     renderCatalog();
