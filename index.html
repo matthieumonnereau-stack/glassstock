@@ -86,8 +86,10 @@
     <!-- ÉCRAN DE CONNEXION ET CRÉATION DE COMPTE -->
     <div id="auth-screen" class="fixed inset-0 z-50 bg-[#07132B] flex items-center justify-center p-4">
         <div class="bg-[#0E234F] border border-blue-900/50 p-8 rounded-2xl max-w-md w-full shadow-2xl text-center">
-            <div class="w-16 h-16 bg-[#FFC62D]/20 text-[#FFC62D] rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border border-[#FFC62D]/30">
-                <i class="fa-solid fa-car-burst"></i>
+            <!-- LOGO PARE-BRISE CONNEXION -->
+            <div class="w-16 h-16 bg-[#0066BA] text-[#FFC62D] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-600/30 border-2 border-[#FFC62D]/60 relative overflow-hidden">
+                <div class="absolute inset-1 border border-white/20 rounded-xl bg-gradient-to-tr from-blue-900/50 to-transparent"></div>
+                <i class="fa-solid fa-car-side text-2xl relative z-10"></i>
             </div>
             
             <!-- FORMULAIRE DE CONNEXION -->
@@ -160,9 +162,10 @@
         <!-- HEADER -->
         <header class="bg-[#0B1B3D] border-b border-blue-900/40 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-md">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-[#FFC62D] rounded-xl flex items-center justify-center text-slate-950 text-xl shadow-lg shadow-amber-500/20 relative overflow-hidden" title="Mondial Pare-Brise">
-                    <i class="fa-solid fa-car-burst"></i>
-                    <div class="absolute inset-0 border-2 border-slate-950/20 rounded-xl pointer-events-none"></div>
+                <!-- NOUVEAU LOGO PARE-BRISE STYLISÉ -->
+                <div class="w-11 h-11 bg-[#0066BA] text-[#FFC62D] rounded-xl flex items-center justify-center text-lg shadow-lg shadow-blue-600/30 border-2 border-[#FFC62D] relative overflow-hidden" title="Mondial Pare-Brise Stock">
+                    <div class="absolute inset-0.5 border border-white/20 rounded-lg bg-gradient-to-tr from-blue-950/80 to-blue-600/30"></div>
+                    <i class="fa-solid fa-car-side relative z-10 text-[#FFC62D]"></i>
                 </div>
                 <div>
                     <h1 class="font-bold text-lg flex items-center gap-2 text-white">
