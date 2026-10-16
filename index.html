@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlassStock - Gestion Multi-Centres avec Scanner Pilkington & Support</title>
+    <title>GlassStock - Gestion Multi-Centres & Support</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- QR Code Scanner & Generator Libs -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Tesseract.js for OCR (Scan de factures / bons Pilkington) -->
-    <script src="https://unpkg.com/tesseract.js@v5.0.5/dist/tesseract.min.js"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -241,9 +239,6 @@
                     <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap">
                         <i class="fa-solid fa-camera"></i> Scanner Caméra QR
                     </button>
-                    <button onclick="switchTab('ocr')" id="tab-btn-ocr" class="pb-3 border-b-2 border-transparent text-emerald-400 hover:text-emerald-300 flex items-center gap-2 transition whitespace-nowrap">
-                        <i class="fa-solid fa-file-invoice"></i> Scanner Bon Pilkington (OCR)
-                    </button>
                     <button onclick="switchTab('inventory')" id="tab-btn-inventory" class="pb-3 border-b-2 border-transparent text-amber-400 hover:text-amber-300 flex items-center gap-2 transition whitespace-nowrap">
                         <i class="fa-solid fa-clipboard-check"></i> Mode Inventaire
                     </button>
@@ -331,52 +326,6 @@
                         <button id="btn-execute-scan" onclick="executeScanAction()" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl transition shadow-lg shadow-emerald-600/20">
                             Valider l'Action Stock
                         </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB : SCANNER DE BON PILKINGTON (OCR SPÉCIFIQUE) -->
-            <div id="tab-ocr" class="hidden space-y-6">
-                <div class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl space-y-6">
-                    <div>
-                        <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-file-invoice text-emerald-400"></i> Scanner / Importer un bon de commande Pilkington</h3>
-                        <p class="text-xs text-slate-400 mt-1">Importez une photo ou un scan d'une confirmation de commande Pilkington[cite: 1]. Le système va extraire automatiquement les Eurocodes, les modèles de véhicules et les prix unitaires pour l'agence <span id="ocr-center-name" class="text-blue-400 font-bold"></span>.</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                        <div class="space-y-4">
-                            <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-2xl p-8 text-center bg-slate-900/50 transition cursor-pointer relative" onclick="document.getElementById('ocr-file-input').click()">
-                                <input type="file" id="ocr-file-input" accept="image/*" class="hidden" onchange="handleOcrImageSelected(event)">
-                                <div class="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                                </div>
-                                <h4 class="font-semibold text-sm text-slate-200">Cliquez pour importer la confirmation de commande</h4>
-                                <p class="text-xs text-slate-400 mt-1">Formats acceptés : JPG, PNG</p>
-                            </div>
-
-                            <div id="ocr-preview-container" class="hidden space-y-3">
-                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Aperçu du document :</p>
-                                <img id="ocr-preview-img" class="max-h-48 rounded-xl border border-slate-700 mx-auto object-contain" src="" alt="Aperçu">
-                                <button onclick="processPilkingtonDocument()" id="btn-run-ocr" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Analyser le bon Pilkington
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-xl space-y-4 min-h-[250px] flex flex-col justify-between">
-                            <div>
-                                <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center justify-between">
-                                    <span>Pièces identifiées :</span>
-                                    <span id="ocr-status-badge" class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px]">En attente</span>
-                                </h4>
-                                <div id="ocr-results-box" class="space-y-2 max-h-60 overflow-y-auto text-xs font-mono text-slate-300">
-                                    <p class="text-slate-500 italic">Aucun document analysé pour le moment.</p>
-                                </div>
-                            </div>
-                            <button id="btn-add-extracted-items" onclick="addExtractedPilkingtonItems()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl transition shadow-lg shadow-blue-600/20 hidden">
-                                Valider et ajouter au stock de l'agence
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -785,7 +734,6 @@
 
         let inventoryActive = false;
         let scannedInventoryCodes = [];
-        let extractedPilkingtonItems = [];
 
         const CATEGORIES_LIST = [
             "PARE-BRISE",
@@ -1113,14 +1061,12 @@
 
             select.disabled = false;
             document.getElementById('inv-center-name').innerText = currentCenter;
-            document.getElementById('ocr-center-name').innerText = currentCenter;
             updateUIStateForPermissions();
         }
 
         window.changeCenter = function() {
             currentCenter = document.getElementById('current-center').value;
             document.getElementById('inv-center-name').innerText = currentCenter;
-            document.getElementById('ocr-center-name').innerText = currentCenter;
             stopInventorySession();
             updateUIStateForPermissions();
             renderCategoryTabs();
@@ -1129,12 +1075,14 @@
         }
 
         window.switchTab = function(tab) {
-            ['catalog', 'scanner', 'ocr', 'inventory', 'history'].forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add('hidden');
+            ['catalog', 'scanner', 'inventory', 'history'].forEach(t => {
+                const tabEl = document.getElementById(`tab-${t}`);
+                if (tabEl) tabEl.classList.add('hidden');
                 const btn = document.getElementById(`tab-btn-${t}`);
                 if(btn) btn.className = "pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap";
             });
-            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            const activeTabEl = document.getElementById(`tab-${tab}`);
+            if (activeTabEl) activeTabEl.classList.remove('hidden');
             const activeBtn = document.getElementById(`tab-btn-${tab}`);
             if(activeBtn) activeBtn.className = "pb-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition whitespace-nowrap";
             
@@ -1173,189 +1121,6 @@
                 mainHtml5QrCode.stop().catch(() => {});
             }
         }
-
-        // === GESTION OCR SPÉCIFIQUE PILKINGTON ===
-        window.handleOcrImageSelected = function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const previewImg = document.getElementById('ocr-preview-img');
-                previewImg.src = event.target.result;
-                document.getElementById('ocr-preview-container').classList.remove('hidden');
-                document.getElementById('ocr-results-box').innerHTML = '<p class="text-slate-400 italic">Document prêt pour analyse.</p>';
-                document.getElementById('btn-add-extracted-items').classList.add('hidden');
-                extractedPilkingtonItems = [];
-            };
-            reader.readAsDataURL(file);
-        }
-
-        window.processPilkingtonDocument = async function() {
-            const imgElement = document.getElementById('ocr-preview-img');
-            if (!imgElement.src) return alert("Veuillez d'abord sélectionner une image de confirmation de commande.");
-
-            const statusBadge = document.getElementById('ocr-status-badge');
-            const resultsBox = document.getElementById('ocr-results-box');
-            
-            statusBadge.innerText = "Lecture OCR en cours...";
-            statusBadge.className = "px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] animate-pulse";
-            resultsBox.innerHTML = '<p class="text-amber-400">Analyse de la mise en page Pilkington...</p>';
-
-            try {
-                const { data: { text } } = await Tesseract.recognize(imgElement.src, 'fra', {
-                    logger: m => {
-                        if (m.status === 'recognizing text') {
-                            const pct = Math.round(m.progress * 100);
-                            statusBadge.innerText = `Analyse : ${pct}%`;
-                        }
-                    }
-                });
-
-                // Algorithme d'analyse intelligent ciblant les formats de facturation Pilkington (ex: 3771AGSMZ6P, 7303AGCCMVZ)
-                const lines = text.split('\n');
-                extractedPilkingtonItems = [];
-
-                let currentEurocode = null;
-                let currentDescription = "";
-                let currentPrice = 0;
-                let currentQty = 1;
-
-                lines.forEach(line => {
-                    const cleanLine = line.trim();
-                    // Recherche d'un motif Eurocode standard (ex: 4 chiffres suivis de lettres/chiffres)
-                    const eurocodeMatch = cleanLine.match(/\b([0-9]{4}[A-Z0-9]{5,12})\b/);
-                    
-                    if (eurocodeMatch) {
-                        if (currentEurocode) {
-                            extractedPilkingtonItems.push({ eurocode: currentEurocode, description: currentDescription, prix: currentPrice, qte: currentQty });
-                        }
-                        currentEurocode = eurocodeMatch[1];
-                        currentDescription = cleanLine.replace(currentEurocode, '').trim();
-                        currentPrice = 0;
-                        currentQty = 1;
-                    } else if (currentEurocode) {
-                        // Accumulation de la description ou détection de prix / quantités
-                        if (cleanLine.match(/^[0-9]+[,\.][0-9]{2}$/)) {
-                            currentPrice = parseNum(cleanLine, 0);
-                        } else if (cleanLine.length > 3 && !cleanLine.toLowerCase().includes('remise') && !cleanLine.toLowerCase().includes('total')) {
-                            currentDescription += " " + cleanLine;
-                        }
-                    }
-                });
-
-                if (currentEurocode) {
-                    extractedPilkingtonItems.push({ eurocode: currentEurocode, description: currentDescription, prix: currentPrice, qte: currentQty });
-                }
-
-                // Si la détection fine par ligne a du mal, on applique un regex global de secours sur les eurocodes connus
-                if (extractedPilkingtonItems.length === 0) {
-                    const fallbackMatches = text.match(/\b[0-9]{4}[A-Z0-9]{5,12}\b/g) || [];
-                    const uniqueCodes = [...new Set(fallbackMatches)];
-                    uniqueCodes.forEach(code => {
-                        extractedPilkingtonItems.push({ eurocode: code, description: "Vitrage Pilkington", prix: 0, qte: 1 });
-                    });
-                }
-
-                resultsBox.innerHTML = '';
-
-                if (extractedPilkingtonItems.length === 0) {
-                    statusBadge.innerText = "Aucun article détecté";
-                    statusBadge.className = "px-2 py-0.5 rounded bg-red-500/20 text-red-300 text-[10px]";
-                    resultsBox.innerHTML = `<p class="text-red-400">Aucun code produit Pilkington n'a pu être extrait.</p><div class="mt-2 p-2 bg-slate-950 rounded text-[10px] text-slate-500 max-h-32 overflow-y-auto">Texte lu :<br>${text}</div>`;
-                } else {
-                    statusBadge.innerText = `${extractedPilkingtonItems.length} pièce(s) trouvée(s)`;
-                    statusBadge.className = "px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]";
-                    
-                    extractedPilkingtonItems.forEach((item, idx) => {
-                        // Extraction rapide de la marque si présente dans la description
-                        let marque = "Inconnue";
-                        let modele = item.description.slice(0, 40) || "Commande Pilkington";
-                        const upperDesc = item.description.toUpperCase();
-                        if (upperDesc.includes('IVECO')) marque = "IVECO";
-                        else if (upperDesc.includes('RENAULT')) marque = "RENAULT";
-                        else if (upperDesc.includes('PEUGEOT')) marque = "PEUGEOT";
-                        else if (upperDesc.includes('CITROEN')) marque = "CITROEN";
-                        else if (upperDesc.includes('VOLKSWAGEN') || upperDesc.includes('VW')) marque = "VOLKSWAGEN";
-                        else if (upperDesc.includes('AUDI')) marque = "AUDI";
-                        else if (upperDesc.includes('BMW')) marque = "BMW";
-                        else if (upperDesc.includes('MERCEDES')) marque = "MERCEDES";
-
-                        item.marque = marque;
-                        item.modele = modele;
-
-                        resultsBox.innerHTML += `
-                            <div class="p-2.5 bg-slate-950 rounded border border-slate-800 space-y-1">
-                                <div class="flex justify-between items-center">
-                                    <span class="font-bold text-blue-400">${item.eurocode}</span>
-                                    <span class="text-emerald-400 font-semibold">${item.prix > 0 ? item.prix.toFixed(2) + ' €' : 'Prix non détecté'}</span>
-                                </div>
-                                <div class="text-[11px] text-slate-300 truncate">Véhicule : <strong>${marque}</strong> - ${modele}</div>
-                            </div>
-                        `;
-                    });
-
-                    if (canEditCurrentCenter()) {
-                        document.getElementById('btn-add-extracted-items').classList.remove('hidden');
-                    } else {
-                        resultsBox.innerHTML += `<p class="text-xs text-amber-400 mt-2">⚠️ Vous êtes en consultation seule, l'ajout automatique est désactivé.</p>`;
-                    }
-                }
-
-            } catch (err) {
-                console.error("Erreur OCR Pilkington :", err);
-                statusBadge.innerText = "Erreur d'analyse";
-                statusBadge.className = "px-2 py-0.5 rounded bg-red-500/20 text-red-300 text-[10px]";
-                resultsBox.innerHTML = `<p class="text-red-400">Erreur lors de la lecture optique.</p>`;
-            }
-        }
-
-        window.addExtractedPilkingtonItems = function() {
-            if (!canEditCurrentCenter()) return alert("Action non autorisée.");
-            if (extractedPilkingtonItems.length === 0) return alert("Aucune pièce à ajouter.");
-
-            if (!stockData[currentCenter]) stockData[currentCenter] = [];
-            let addedCount = 0;
-
-            extractedPilkingtonItems.forEach(item => {
-                const existing = stockData[currentCenter].find(i => i.eurocode === item.eurocode);
-                if (existing) {
-                    existing.stock = parseNum(existing.stock, 0) + parseNum(item.qte, 1);
-                    if (item.prix > 0) existing.prix = item.prix;
-                } else {
-                    stockData[currentCenter].push({
-                        id: Date.now() + Math.random(),
-                        eurocode: item.eurocode,
-                        type: "PARE-BRISE",
-                        etat: "Neuf",
-                        marque: item.marque || "Inconnu",
-                        modele: item.modele || "Bon Pilkington",
-                        annee: "",
-                        options: "",
-                        emplacement: "Réception",
-                        stock: parseNum(item.qte, 1),
-                        prix: parseNum(item.prix, 0),
-                        seuil: 0
-                    });
-                }
-                historyData.unshift({
-                    date: new Date().toISOString().replace('T', ' ').slice(0, 19),
-                    center: currentCenter,
-                    type: 'Entrée (Scan Pilkington)',
-                    eurocode: item.eurocode,
-                    details: `Ajout automatique (Bon commande Pilkington)`
-                });
-                addedCount++;
-            });
-
-            saveData();
-            renderCategoryTabs();
-            renderCatalog();
-            renderHistory();
-            alert(`✅ ${addedCount} référence(s) Pilkington intégrée(s) avec succès dans le stock de ${currentCenter} !`);
-            switchTab('catalog');
-        }
-        // ===================================
 
         window.startInventorySession = function() {
             inventoryActive = true;
@@ -1835,7 +1600,6 @@
             if (searchInput) searchInput.value = eurocode;
 
             document.getElementById('inv-center-name').innerText = currentCenter;
-            document.getElementById('ocr-center-name').innerText = currentCenter;
             updateUIStateForPermissions();
             renderCategoryTabs();
             renderCatalog();
@@ -1861,9 +1625,7 @@
         window.openModal = function(id = '', defaultEurocode = "") {
             if (!canEditCurrentCenter()) return alert("Vous n'avez pas le droit de modifier le stock de cette agence.");
 
-            // Désactiver la saisie multiple par défaut à l'ouverture
             document.getElementById('f-saisie-multiple').checked = false;
-
             document.getElementById('item-modal').classList.remove('hidden');
             closeModalScanner();
 
@@ -1997,7 +1759,6 @@
             renderCategoryTabs();
             renderCatalog();
 
-            // === GESTION DU MODE SAISIE MULTIPLE ===
             const isMultiple = document.getElementById('f-saisie-multiple').checked;
 
             if (isMultiple) {
@@ -2197,7 +1958,6 @@
             }
         }
 
-        // === FONCTIONS SIGNALEMENT & SUPPORT ===
         window.openReportModal = function() {
             document.getElementById('report-message-input').value = '';
             document.getElementById('report-modal').classList.remove('hidden');
@@ -2275,7 +2035,6 @@
                 }
             }
         }
-        // ====================================
 
         window.executeScanAction = function() {
             if (!canEditCurrentCenter()) return alert("Vous n'avez pas le droit d'effectuer des mouvements de stock sur une autre agence.");
