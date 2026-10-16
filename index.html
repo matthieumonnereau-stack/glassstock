@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlassStock - Gestion Multi-Centres avec Prix d'Achat & Support</title>
+    <title>GlassStock - Gestion Multi-Centres avec Scanner de Facture & Support</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- QR Code Scanner & Generator Libs -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Tesseract.js for OCR (Scan de feuilles de commande / factures) -->
+    <script src="https://unpkg.com/tesseract.js@v5.0.5/dist/tesseract.min.js"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -239,6 +241,9 @@
                     <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap">
                         <i class="fa-solid fa-camera"></i> Scanner Caméra QR
                     </button>
+                    <button onclick="switchTab('ocr')" id="tab-btn-ocr" class="pb-3 border-b-2 border-transparent text-emerald-400 hover:text-emerald-300 flex items-center gap-2 transition whitespace-nowrap">
+                        <i class="fa-solid fa-file-invoice"></i> Scanner Bon / Facture (OCR)
+                    </button>
                     <button onclick="switchTab('inventory')" id="tab-btn-inventory" class="pb-3 border-b-2 border-transparent text-amber-400 hover:text-amber-300 flex items-center gap-2 transition whitespace-nowrap">
                         <i class="fa-solid fa-clipboard-check"></i> Mode Inventaire
                     </button>
@@ -326,6 +331,52 @@
                         <button id="btn-execute-scan" onclick="executeScanAction()" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl transition shadow-lg shadow-emerald-600/20">
                             Valider l'Action Stock
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB : SCANNER DE FACTURE / BON DE COMMANDE (OCR) -->
+            <div id="tab-ocr" class="hidden space-y-6">
+                <div class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-file-invoice text-emerald-400"></i> Scanner un bon de livraison ou une facture</h3>
+                        <p class="text-xs text-slate-400 mt-1">Importez ou prenez en photo un bon de commande/facture. L'intelligence artificielle va extraire automatiquement les Eurocodes et les ajouter au centre <span id="ocr-center-name" class="text-blue-400 font-bold"></span>.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                        <div class="space-y-4">
+                            <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-2xl p-8 text-center bg-slate-900/50 transition cursor-pointer relative" onclick="document.getElementById('ocr-file-input').click()">
+                                <input type="file" id="ocr-file-input" accept="image/*" class="hidden" onchange="handleOcrImageSelected(event)">
+                                <div class="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                </div>
+                                <h4 class="font-semibold text-sm text-slate-200">Cliquez pour importer ou photographier un bon</h4>
+                                <p class="text-xs text-slate-400 mt-1">Formats acceptés : JPG, PNG</p>
+                            </div>
+
+                            <div id="ocr-preview-container" class="hidden space-y-3">
+                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Aperçu du document :</p>
+                                <img id="ocr-preview-img" class="max-h-48 rounded-xl border border-slate-700 mx-auto object-contain" src="" alt="Aperçu">
+                                <button onclick="processOcrDocument()" id="btn-run-ocr" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Extraire les Eurocodes du document
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-xl space-y-4 min-h-[250px] flex flex-col justify-between">
+                            <div>
+                                <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+                                    <span>Résultats de l'analyse OCR :</span>
+                                    <span id="ocr-status-badge" class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px]">En attente</span>
+                                </h4>
+                                <div id="ocr-results-box" class="space-y-2 max-h-60 overflow-y-auto text-xs font-mono text-slate-300">
+                                    <p class="text-slate-500 italic">Aucun document analysé pour le moment.</p>
+                                </div>
+                            </div>
+                            <button id="btn-add-extracted-items" onclick="addExtractedItemsToStock()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl transition shadow-lg shadow-blue-600/20 hidden">
+                                Ajouter ces pièces au stock de l'agence
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -734,6 +785,7 @@
 
         let inventoryActive = false;
         let scannedInventoryCodes = [];
+        let extractedOcrCodes = [];
 
         const CATEGORIES_LIST = [
             "PARE-BRISE",
@@ -1061,12 +1113,14 @@
 
             select.disabled = false;
             document.getElementById('inv-center-name').innerText = currentCenter;
+            document.getElementById('ocr-center-name').innerText = currentCenter;
             updateUIStateForPermissions();
         }
 
         window.changeCenter = function() {
             currentCenter = document.getElementById('current-center').value;
             document.getElementById('inv-center-name').innerText = currentCenter;
+            document.getElementById('ocr-center-name').innerText = currentCenter;
             stopInventorySession();
             updateUIStateForPermissions();
             renderCategoryTabs();
@@ -1075,7 +1129,7 @@
         }
 
         window.switchTab = function(tab) {
-            ['catalog', 'scanner', 'inventory', 'history'].forEach(t => {
+            ['catalog', 'scanner', 'ocr', 'inventory', 'history'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
                 const btn = document.getElementById(`tab-btn-${t}`);
                 if(btn) btn.className = "pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition whitespace-nowrap";
@@ -1119,6 +1173,128 @@
                 mainHtml5QrCode.stop().catch(() => {});
             }
         }
+
+        // === GESTION OCR / SCAN DE FACTURE ===
+        window.handleOcrImageSelected = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const previewImg = document.getElementById('ocr-preview-img');
+                previewImg.src = event.target.result;
+                document.getElementById('ocr-preview-container').classList.remove('hidden');
+                document.getElementById('ocr-results-box').innerHTML = '<p class="text-slate-400 italic">Image prête pour analyse.</p>';
+                document.getElementById('btn-add-extracted-items').classList.add('hidden');
+                extractedOcrCodes = [];
+            };
+            reader.readAsDataURL(file);
+        }
+
+        window.processOcrDocument = async function() {
+            const imgElement = document.getElementById('ocr-preview-img');
+            if (!imgElement.src) return alert("Veuillez d'abord sélectionner une image.");
+
+            const statusBadge = document.getElementById('ocr-status-badge');
+            const resultsBox = document.getElementById('ocr-results-box');
+            
+            statusBadge.innerText = "Analyse OCR en cours...";
+            statusBadge.className = "px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] animate-pulse";
+            resultsBox.innerHTML = '<p class="text-amber-400">Lecture des textes et recherche d’Eurocodes...</p>';
+
+            try {
+                const { data: { text } } = await Tesseract.recognize(imgElement.src, 'fra', {
+                    logger: m => {
+                        if (m.status === 'recognizing text') {
+                            const pct = Math.round(m.progress * 100);
+                            statusBadge.innerText = `Analyse : ${pct}%`;
+                        }
+                    }
+                });
+
+                // Expression régulière pour détecter les codes Eurocodes (ex: 4-5 chiffres + lettres + optionnel)
+                // Format type vitrage automobile : ex: 8334AGACMVW1P ou variantes proches
+                const eurocodeRegex = /\b[0-9]{3,5}[A-Z0-9]{5,15}\b/g;
+                const matches = text.match(eurocodeRegex) || [];
+                
+                // Nettoyage et déduplication
+                const uniqueCodes = [...new Set(matches.map(c => c.trim().toUpperCase()))];
+
+                extractedOcrCodes = uniqueCodes;
+                resultsBox.innerHTML = '';
+
+                if (uniqueCodes.length === 0) {
+                    statusBadge.innerText = "Aucun Eurocode détecté";
+                    statusBadge.className = "px-2 py-0.5 rounded bg-red-500/20 text-red-300 text-[10px]";
+                    resultsBox.innerHTML = `<p class="text-red-400">Aucun format d'Eurocode n'a pu être extrait avec certitude de ce document.</p><div class="mt-2 p-2 bg-slate-950 rounded text-[10px] text-slate-500 max-h-32 overflow-y-auto">Texte brut lu :<br>${text}</div>`;
+                } else {
+                    statusBadge.innerText = `${uniqueCodes.length} Eurocode(s) détecté(s)`;
+                    statusBadge.className = "px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]";
+                    
+                    uniqueCodes.forEach(code => {
+                        resultsBox.innerHTML += `<div class="p-2 bg-slate-950 rounded border border-slate-800 flex justify-between items-center"><span class="font-bold text-blue-400">${code}</span><span class="text-[10px] text-emerald-400">Détecté</span></div>`;
+                    });
+
+                    if (canEditCurrentCenter()) {
+                        document.getElementById('btn-add-extracted-items').classList.remove('hidden');
+                    } else {
+                        resultsBox.innerHTML += `<p class="text-xs text-amber-400 mt-2">⚠️ Vous êtes en consultation seule, l'ajout automatique est désactivé pour ce centre.</p>`;
+                    }
+                }
+
+            } catch (err) {
+                console.error("Erreur OCR :", err);
+                statusBadge.innerText = "Erreur d'analyse";
+                statusBadge.className = "px-2 py-0.5 rounded bg-red-500/20 text-red-300 text-[10px]";
+                resultsBox.innerHTML = `<p class="text-red-400">Erreur lors de la lecture optique du document.</p>`;
+            }
+        }
+
+        window.addExtractedItemsToStock = function() {
+            if (!canEditCurrentCenter()) return alert("Action non autorisée.");
+            if (extractedOcrCodes.length === 0) return alert("Aucune pièce à ajouter.");
+
+            if (!stockData[currentCenter]) stockData[currentCenter] = [];
+            let addedCount = 0;
+
+            extractedOcrCodes.forEach(code => {
+                const existing = stockData[currentCenter].find(i => i.eurocode === code);
+                if (existing) {
+                    existing.stock = parseNum(existing.stock, 0) + 1;
+                } else {
+                    stockData[currentCenter].push({
+                        id: Date.now() + Math.random(),
+                        eurocode: code,
+                        type: "PARE-BRISE",
+                        etat: "Neuf",
+                        marque: "Inconnu",
+                        modele: "Facture OCR",
+                        annee: "",
+                        options: "",
+                        emplacement: "Réception",
+                        stock: 1,
+                        prix: 0,
+                        seuil: 0
+                    });
+                }
+                historyData.unshift({
+                    date: new Date().toISOString().replace('T', ' ').slice(0, 19),
+                    center: currentCenter,
+                    type: 'Entrée (Scan OCR)',
+                    eurocode: code,
+                    details: 'Ajout automatique depuis bon/facture'
+                });
+                addedCount++;
+            });
+
+            saveData();
+            renderCategoryTabs();
+            renderCatalog();
+            renderHistory();
+            alert(`✅ ${addedCount} référence(s) ajoutée(s) ou mise(s) à jour dans le stock de ${currentCenter} !`);
+            switchTab('catalog');
+        }
+        // ===================================
 
         window.startInventorySession = function() {
             inventoryActive = true;
@@ -1598,6 +1774,7 @@
             if (searchInput) searchInput.value = eurocode;
 
             document.getElementById('inv-center-name').innerText = currentCenter;
+            document.getElementById('ocr-center-name').innerText = currentCenter;
             updateUIStateForPermissions();
             renderCategoryTabs();
             renderCatalog();
