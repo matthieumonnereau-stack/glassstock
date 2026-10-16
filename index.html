@@ -397,7 +397,7 @@
                 </div>
                 <div>
                     <label class="text-xs font-medium text-slate-400">Prix d'achat unitaire (€)</label>
-                    <input type="number" id="f-prix" value="0" min="0" step="0.01" placeholder="Ex: 85.50" class="w-full mt-1 bg-slate-800 border border-emerald-500/40 rounded-xl px-3 py-2 text-sm text-emerald-400 font-semibold focus:outline-none focus:border-emerald-500">
+                    <input type="text" inputmode="decimal" id="f-prix" value="0" placeholder="Ex: 85.50 ou 85,50" class="w-full mt-1 bg-slate-800 border border-emerald-500/40 rounded-xl px-3 py-2 text-sm text-emerald-400 font-semibold focus:outline-none focus:border-emerald-500">
                 </div>
                 <div>
                     <label class="text-xs font-medium text-slate-400">Quantité Initiale</label>
@@ -533,6 +533,19 @@
             "RETROVISEURS",
             "AUTRES"
         ];
+
+        // FONCTIONS DE CONVERSION ET SÉCURISATION DES DONNÉES
+        function parseNum(val, defaultVal = 0) {
+            if (val === null || val === undefined || val === '') return defaultVal;
+            const cleanStr = String(val).replace(',', '.').trim();
+            const n = parseFloat(cleanStr);
+            return isNaN(n) ? defaultVal : n;
+        }
+
+        function parseStr(val, defaultVal = '') {
+            if (val === null || val === undefined) return defaultVal;
+            return String(val).trim();
+        }
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -722,8 +735,21 @@
         async function saveDataToFirebase() {
             isWriting = true;
             try {
+                // NETTOYAGE STRICT DE TOUT CHAMP SANS VALEUR/NAN
+                const cleanStock = JSON.parse(JSON.stringify(stockData, (key, value) => {
+                    if (typeof value === 'number' && isNaN(value)) return 0;
+                    if (value === undefined) return null;
+                    return value;
+                }));
+
+                const cleanHistory = JSON.parse(JSON.stringify(historyData, (key, value) => {
+                    if (typeof value === 'number' && isNaN(value)) return 0;
+                    if (value === undefined) return null;
+                    return value;
+                }));
+
                 const docRef = doc(db, "stock_global", "atelier");
-                await setDoc(docRef, { stock: stockData, history: historyData });
+                await setDoc(docRef, { stock: cleanStock, history: cleanHistory });
             } catch (err) {
                 console.error("Erreur écriture Firebase :", err);
                 alert("⚠️ Erreur de sauvegarde Firebase : " + (err.message || "Permissions insuffisantes."));
@@ -910,9 +936,9 @@
             list.forEach(item => {
                 allCodesMap.set(item.eurocode, {
                     item: item,
-                    infoStock: item.stock || 0,
+                    infoStock: parseNum(item.stock, 0),
                     physicalCount: 0,
-                    prix: item.prix || 0
+                    prix: parseNum(item.prix, 0)
                 });
             });
 
@@ -978,7 +1004,7 @@
             let item = list.find(i => i.eurocode === eurocode);
 
             if (item) {
-                item.stock = newStockValue;
+                item.stock = parseNum(newStockValue, 0);
                 historyData.unshift({ 
                     date: new Date().toISOString().replace('T', ' ').slice(0, 19), 
                     center: currentCenter, 
@@ -997,7 +1023,7 @@
                     annee: "",
                     options: "",
                     emplacement: "Non rangé",
-                    stock: newStockValue,
+                    stock: parseNum(newStockValue, 0),
                     prix: 0,
                     seuil: 0
                 });
@@ -1094,8 +1120,8 @@
 
                 let rowsHtml = '';
                 brandItems.forEach(item => {
-                    const stockVal = item.stock !== undefined ? parseInt(item.stock) : 0;
-                    const prixVal = item.prix !== undefined ? parseFloat(item.prix) : 0;
+                    const stockVal = parseNum(item.stock, 0);
+                    const prixVal = parseNum(item.prix, 0);
                     
                     let stockBadgeClass = stockVal === 0 
                         ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold' 
@@ -1184,21 +1210,17 @@
         window.updateStats = function() {
             const list = stockData[currentCenter] || [];
             document.getElementById('stat-refs').innerText = list.length;
-            const totalStock = list.reduce((acc, item) => acc + (item.stock || 0), 0);
+            const totalStock = list.reduce((acc, item) => acc + parseNum(item.stock, 0), 0);
             document.getElementById('stat-stock').innerText = totalStock;
             
             const lowStockCount = list.filter(item => {
-                const seuilMin = (item.seuil !== undefined && item.seuil !== null) ? parseInt(item.seuil) : 0;
-                return seuilMin > 0 && (item.stock || 0) <= seuilMin;
+                const seuilMin = parseNum(item.seuil, 0);
+                return seuilMin > 0 && parseNum(item.stock, 0) <= seuilMin;
             }).length;
             document.getElementById('stat-low').innerText = lowStockCount;
 
-            const totalVal = list.reduce((acc, item) => acc + ((item.stock || 0) * (item.prix || 0)), 0);
+            const totalVal = list.reduce((acc, item) => acc + (parseNum(item.stock, 0) * parseNum(item.prix, 0)), 0);
             document.getElementById('stat-valeur').innerText = totalVal.toFixed(2) + " €";
-            
-            const monthStr = new Date().toISOString().slice(0, 7);
-            const poses = historyData.filter(h => h.center === currentCenter && h.type.includes('Sortie') && h.date.startsWith(monthStr)).length;
-            document.getElementById('stat-poses').innerText = poses;
         }
 
         window.openModal = function(id = '', defaultEurocode = "") {
@@ -1207,22 +1229,25 @@
             document.getElementById('item-modal').classList.remove('hidden');
             closeModalScanner();
 
-            document.getElementById('edit-id').value = id || "";
-            document.getElementById('edit-original-eurocode').value = defaultEurocode || "";
+            const cleanId = parseStr(id);
+            const cleanEurocode = parseStr(defaultEurocode);
+
+            document.getElementById('edit-id').value = cleanId;
+            document.getElementById('edit-original-eurocode').value = cleanEurocode;
 
             const list = stockData[currentCenter] || [];
             let item = null;
 
-            if (id !== "") {
-                item = list.find(i => String(i.id) === String(id));
+            if (cleanId !== "") {
+                item = list.find(i => String(i.id) === String(cleanId));
             }
-            if (!item && defaultEurocode !== "") {
-                item = list.find(i => String(i.eurocode).toUpperCase() === String(defaultEurocode).toUpperCase());
+            if (!item && cleanEurocode !== "") {
+                item = list.find(i => String(i.eurocode).toUpperCase() === String(cleanEurocode).toUpperCase());
             }
 
             if (item) {
                 document.getElementById('modal-title').innerText = "Modifier la Pièce";
-                document.getElementById('edit-id').value = item.id || "";
+                document.getElementById('edit-id').value = item.id !== undefined ? String(item.id) : "";
                 document.getElementById('edit-original-eurocode').value = item.eurocode || "";
                 document.getElementById('f-eurocode').value = item.eurocode || "";
                 document.getElementById('f-type').value = item.type || currentCategory;
@@ -1232,12 +1257,12 @@
                 document.getElementById('f-annee').value = item.annee || "";
                 document.getElementById('f-options').value = item.options || "";
                 document.getElementById('f-emplacement').value = item.emplacement || "";
-                document.getElementById('f-prix').value = item.prix !== undefined ? item.prix : 0;
-                document.getElementById('f-qte').value = item.stock !== undefined ? item.stock : 1;
-                document.getElementById('f-seuil').value = item.seuil !== undefined ? item.seuil : 0;
+                document.getElementById('f-prix').value = parseNum(item.prix, 0);
+                document.getElementById('f-qte').value = parseNum(item.stock, 1);
+                document.getElementById('f-seuil').value = parseNum(item.seuil, 0);
             } else {
                 document.getElementById('modal-title').innerText = "Ajouter une Pièce";
-                document.getElementById('f-eurocode').value = defaultEurocode || "";
+                document.getElementById('f-eurocode').value = cleanEurocode;
                 document.getElementById('f-type').value = currentCategory;
                 document.getElementById('f-etat').value = "Neuf";
                 document.getElementById('f-marque').value = "";
@@ -1245,7 +1270,7 @@
                 document.getElementById('f-annee').value = "";
                 document.getElementById('f-options').value = "";
                 document.getElementById('f-emplacement').value = "";
-                document.getElementById('f-prix').value = 0;
+                document.getElementById('f-prix').value = "0";
                 document.getElementById('f-qte').value = 1;
                 document.getElementById('f-seuil').value = 0;
             }
@@ -1287,38 +1312,40 @@
             if (!canEditCurrentCenter()) return alert("Vous n'avez pas le droit de modifier le stock de cette agence.");
 
             closeModalScanner();
-            const eurocode = document.getElementById('f-eurocode').value.trim().toUpperCase();
+            const eurocode = parseStr(document.getElementById('f-eurocode').value).toUpperCase();
             if (!eurocode) return alert("Veuillez saisir un Eurocode.");
             
             if (!stockData[currentCenter]) stockData[currentCenter] = [];
             
-            const idVal = document.getElementById('edit-id').value;
-            const origEurocode = document.getElementById('edit-original-eurocode').value;
-            const newType = document.getElementById('f-type').value;
+            const idVal = parseStr(document.getElementById('edit-id').value);
+            const origEurocode = parseStr(document.getElementById('edit-original-eurocode').value);
+            const newType = parseStr(document.getElementById('f-type').value, "PARE-BRISE");
 
             const list = stockData[currentCenter];
             let targetIndex = -1;
 
-            if (idVal) {
+            if (idVal !== "") {
                 targetIndex = list.findIndex(i => String(i.id) === String(idVal));
             }
-            if (targetIndex === -1 && origEurocode) {
+            if (targetIndex === -1 && origEurocode !== "") {
                 targetIndex = list.findIndex(i => String(i.eurocode).toUpperCase() === String(origEurocode).toUpperCase());
             }
 
             const itemData = {
-                id: (targetIndex !== -1 && list[targetIndex].id) ? list[targetIndex].id : (idVal ? Number(idVal) : Date.now()),
+                id: (targetIndex !== -1 && list[targetIndex] && list[targetIndex].id) 
+                    ? list[targetIndex].id 
+                    : (idVal ? (parseNum(idVal) || Date.now()) : Date.now()),
                 eurocode: eurocode,
                 type: newType,
-                etat: document.getElementById('f-etat').value,
-                marque: document.getElementById('f-marque').value.trim() || "Inconnue",
-                modele: document.getElementById('f-modele').value.trim(),
-                annee: document.getElementById('f-annee').value.trim(),
-                options: document.getElementById('f-options').value,
-                emplacement: document.getElementById('f-emplacement').value,
-                prix: parseFloat(document.getElementById('f-prix').value) || 0,
-                stock: parseInt(document.getElementById('f-qte').value) || 0,
-                seuil: parseInt(document.getElementById('f-seuil').value) || 0
+                etat: parseStr(document.getElementById('f-etat').value, "Neuf"),
+                marque: parseStr(document.getElementById('f-marque').value, "Inconnue"),
+                modele: parseStr(document.getElementById('f-modele').value),
+                annee: parseStr(document.getElementById('f-annee').value),
+                options: parseStr(document.getElementById('f-options').value),
+                emplacement: parseStr(document.getElementById('f-emplacement').value),
+                prix: parseNum(document.getElementById('f-prix').value, 0),
+                stock: Math.max(0, Math.floor(parseNum(document.getElementById('f-qte').value, 1))),
+                seuil: Math.max(0, Math.floor(parseNum(document.getElementById('f-seuil').value, 0)))
             };
 
             if (targetIndex !== -1) {
@@ -1523,11 +1550,11 @@
             }
 
             if (action === 'pose') {
-                if (item.stock <= 0) return alert("Stock insuffisant pour effectuer cette pose.");
-                item.stock -= 1;
+                if (parseNum(item.stock, 0) <= 0) return alert("Stock insuffisant pour effectuer cette pose.");
+                item.stock = parseNum(item.stock, 0) - 1;
                 historyData.unshift({ date: new Date().toISOString().replace('T', ' ').slice(0, 19), center: currentCenter, type: 'Sortie (Pose)', eurocode: code, details: details || 'Pose atelier' });
             } else {
-                item.stock += 1;
+                item.stock = parseNum(item.stock, 0) + 1;
                 historyData.unshift({ date: new Date().toISOString().replace('T', ' ').slice(0, 19), center: currentCenter, type: 'Entrée (Livraison)', eurocode: code, details: details || 'Réception fournisseur' });
             }
 
