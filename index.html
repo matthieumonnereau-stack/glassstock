@@ -9,6 +9,8 @@
     <!-- QR Code Scanner & Generator Libs -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Excel Parser Lib (SheetJS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -266,9 +268,17 @@
                         </div>
                     </div>
                     
-                    <div class="flex gap-2 w-full lg:w-auto justify-end">
+                    <div class="flex gap-2 w-full lg:w-auto justify-end flex-wrap">
+                        <!-- Input file invisible pour Excel -->
+                        <input type="file" id="excel-file-input" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleExcelUpload(event)">
+                        
+                        <!-- Bouton Import Excel -->
+                        <button id="btn-import-excel" onclick="triggerExcelImport()" class="flex-1 sm:flex-none bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 px-4 py-2.5 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-file-excel"></i> Importer Excel
+                        </button>
+
                         <button onclick="printAllQRCodes()" class="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-print text-amber-400"></i> Planche QR Codes
+                            <i class="fa-solid fa-print text-amber-400"></i> Planche QR
                         </button>
                         <button id="btn-add-item" onclick="openModal()" class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20">
                             <i class="fa-solid fa-plus"></i> Ajouter un Vitrage
@@ -771,15 +781,18 @@
         function updateUIStateForPermissions() {
             const isEditable = canEditCurrentCenter();
             const btnAdd = document.getElementById('btn-add-item');
+            const btnImport = document.getElementById('btn-import-excel');
             const banner = document.getElementById('read-only-banner');
             const btnScanExec = document.getElementById('btn-execute-scan');
 
             if (btnAdd) {
-                if (isEditable) {
-                    btnAdd.classList.remove('hidden');
-                } else {
-                    btnAdd.classList.add('hidden');
-                }
+                if (isEditable) btnAdd.classList.remove('hidden');
+                else btnAdd.classList.add('hidden');
+            }
+            
+            if (btnImport) {
+                if (isEditable) btnImport.classList.remove('hidden');
+                else btnImport.classList.add('hidden');
             }
 
             if (btnScanExec) {
@@ -1045,6 +1058,105 @@
                 mainHtml5QrCode.stop().catch(() => {});
             }
         }
+
+        // ==============================================
+        // GESTION IMPORT EXCEL (SheetJS)
+        // ==============================================
+        window.triggerExcelImport = function() {
+            if (!canEditCurrentCenter()) return alert("Vous n'avez pas le droit de modifier le stock de cette agence.");
+            document.getElementById('excel-file-input').click();
+        };
+
+        window.handleExcelUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    // On prend la première feuille du classeur
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // Conversion de la feuille en tableau d'objets JSON
+                    const rows = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
+
+                    let added = 0;
+                    let updated = 0;
+                    let skipped = 0;
+
+                    const centerStock = stockData[currentCenter] || [];
+
+                    rows.forEach(row => {
+                        // Normalisation des clés pour retrouver facilement les colonnes
+                        // (Enlève les majuscules, les accents et les espaces)
+                        const normRow = {};
+                        for (let k in row) {
+                            const cleanKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
+                            normRow[cleanKey] = row[k];
+                        }
+
+                        const eurocode = parseStr(normRow.eurocode).toUpperCase();
+                        if (!eurocode) {
+                            skipped++;
+                            return; // Passe à la ligne suivante si pas d'Eurocode
+                        }
+
+                        const qty = parseNum(normRow.quantite || normRow.qte || normRow.stock, 1);
+                        const prix = parseNum(normRow.prix || normRow.prixachat, 0);
+                        const marque = parseStr(normRow.marque, "Inconnue");
+                        const modele = parseStr(normRow.modele, "");
+                        const type = parseStr(normRow.type, "PARE-BRISE");
+                        const etat = parseStr(normRow.etat, "Neuf");
+
+                        let existingItem = centerStock.find(i => String(i.eurocode).toUpperCase() === eurocode);
+
+                        if (existingItem) {
+                            // S'il existe déjà, on ajoute la quantité au stock existant
+                            existingItem.stock = parseNum(existingItem.stock, 0) + qty;
+                            // On met à jour le prix s'il y en a un nouveau
+                            if (prix > 0) existingItem.prix = prix;
+                            updated++;
+                        } else {
+                            // Sinon on crée une nouvelle ligne de stock
+                            centerStock.push({
+                                id: Date.now() + Math.floor(Math.random() * 1000), // Eviter les doublons d'ID sur une boucle rapide
+                                eurocode: eurocode,
+                                type: type,
+                                etat: etat,
+                                marque: marque,
+                                modele: modele,
+                                annee: parseStr(normRow.annee, ""),
+                                options: parseStr(normRow.options || normRow.adas, ""),
+                                emplacement: parseStr(normRow.emplacement || normRow.rack, ""),
+                                prix: prix,
+                                stock: qty,
+                                seuil: parseNum(normRow.seuil, 0)
+                            });
+                            added++;
+                        }
+                    });
+
+                    stockData[currentCenter] = centerStock;
+                    saveData();
+                    renderCategoryTabs();
+                    renderCatalog();
+                    updateStats();
+
+                    alert(`Importation Excel vers le centre ${currentCenter} terminée !\n\n✔️ ${added} nouvelles pièces ajoutées\n🔄 ${updated} pièces existantes mises à jour (+ quantité)\n⚠️ ${skipped} lignes ignorées (Eurocode manquant)`);
+
+                } catch (err) {
+                    console.error(err);
+                    alert("Erreur lors de la lecture du fichier Excel. Vérifiez le format.");
+                }
+                event.target.value = ""; // Réinitialise l'input pour pouvoir réimporter le même fichier si besoin
+            };
+            reader.readAsArrayBuffer(file);
+        };
+        // ==============================================
 
         window.startInventorySession = function() {
             inventoryActive = true;
@@ -1697,7 +1809,7 @@
                 document.getElementById('f-prix').value = "0";
                 document.getElementById('f-qte').value = "1";
                 
-                // Animation de succès sur le bouton sans bloquer l'écran avec une alert()
+                // Animation de succès sur le bouton
                 const btn = document.getElementById('btn-save-item');
                 const origText = btn.innerHTML;
                 btn.innerHTML = '<i class="fa-solid fa-check"></i> Ajouté !';
@@ -1712,7 +1824,6 @@
                     btn.classList.replace('shadow-emerald-600/20', 'shadow-blue-600/20');
                 }, 1500);
 
-                // On replace le curseur sur le champ Eurocode prêt à être scanné
                 document.getElementById('f-eurocode').focus();
             } else {
                 closeModal();
