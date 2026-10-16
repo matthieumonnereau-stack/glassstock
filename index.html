@@ -331,7 +331,9 @@
     <div id="item-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <h3 id="modal-title" class="text-lg font-bold">Ajouter un Vitrage</h3>
-            <input type="hidden" id="edit-id">
+            
+            <!-- CHAMP ID CACHÉ ESSENTIEL POUR LA MODIFICATION -->
+            <input type="hidden" id="edit-id" value="">
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="sm:col-span-2">
@@ -1196,21 +1198,23 @@
 
             document.getElementById('item-modal').classList.remove('hidden');
             closeModalScanner();
-            if (id) {
+            if (id !== null && id !== undefined && id !== "") {
                 document.getElementById('modal-title').innerText = "Modifier la Pièce";
-                const item = stockData[currentCenter].find(i => i.id === id);
-                document.getElementById('edit-id').value = item.id;
-                document.getElementById('f-eurocode').value = item.eurocode;
-                document.getElementById('f-type').value = item.type || currentCategory;
-                document.getElementById('f-etat').value = item.etat || "Neuf";
-                document.getElementById('f-marque').value = item.marque || "";
-                document.getElementById('f-modele').value = item.modele || "";
-                document.getElementById('f-annee').value = item.annee || "";
-                document.getElementById('f-options').value = item.options || "";
-                document.getElementById('f-emplacement').value = item.emplacement || "";
-                document.getElementById('f-prix').value = item.prix !== undefined ? item.prix : 0;
-                document.getElementById('f-qte').value = item.stock !== undefined ? item.stock : 1;
-                document.getElementById('f-seuil').value = item.seuil !== undefined ? item.seuil : 0;
+                const item = stockData[currentCenter].find(i => i.id == id);
+                if (item) {
+                    document.getElementById('edit-id').value = item.id;
+                    document.getElementById('f-eurocode').value = item.eurocode || "";
+                    document.getElementById('f-type').value = item.type || currentCategory;
+                    document.getElementById('f-etat').value = item.etat || "Neuf";
+                    document.getElementById('f-marque').value = item.marque || "";
+                    document.getElementById('f-modele').value = item.modele || "";
+                    document.getElementById('f-annee').value = item.annee || "";
+                    document.getElementById('f-options').value = item.options || "";
+                    document.getElementById('f-emplacement').value = item.emplacement || "";
+                    document.getElementById('f-prix').value = item.prix !== undefined ? item.prix : 0;
+                    document.getElementById('f-qte').value = item.stock !== undefined ? item.stock : 1;
+                    document.getElementById('f-seuil').value = item.seuil !== undefined ? item.seuil : 0;
+                }
             } else {
                 document.getElementById('modal-title').innerText = "Ajouter une Pièce";
                 document.getElementById('edit-id').value = "";
@@ -1264,12 +1268,12 @@
             if (!canEditCurrentCenter()) return alert("Vous n'avez pas le droit de modifier le stock de cette agence.");
 
             closeModalScanner();
-            const id = document.getElementById('edit-id').value;
+            const idVal = document.getElementById('edit-id').value;
             const eurocode = document.getElementById('f-eurocode').value.trim().toUpperCase();
             if (!eurocode) return alert("Veuillez saisir un Eurocode.");
             
             const item = {
-                id: id ? parseInt(id) : Date.now(),
+                id: idVal ? parseInt(idVal) : Date.now(),
                 eurocode,
                 type: document.getElementById('f-type').value,
                 etat: document.getElementById('f-etat').value,
@@ -1285,9 +1289,13 @@
 
             if (!stockData[currentCenter]) stockData[currentCenter] = [];
             
-            if (id) {
-                const idx = stockData[currentCenter].findIndex(i => i.id == id);
-                if (idx !== -1) stockData[currentCenter][idx] = item;
+            if (idVal) {
+                const idx = stockData[currentCenter].findIndex(i => i.id == idVal);
+                if (idx !== -1) {
+                    stockData[currentCenter][idx] = item;
+                } else {
+                    stockData[currentCenter].push(item);
+                }
             } else {
                 stockData[currentCenter].push(item);
             }
